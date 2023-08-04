@@ -1,2 +1,9 @@
 node_modules
 dist
+
+# venv
+venv/
+
+# python cache
+*.pyc
+__pycache__/
