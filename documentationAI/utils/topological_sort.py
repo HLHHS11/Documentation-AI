@@ -18,7 +18,7 @@ def topological_sort(graph: Dict[str, list[str]]):
     for node in graph:
         for neighbor in graph[node]:
             in_degree[neighbor] += 1
-    
+
     # 入次数が0のノードをキューに追加
     queue: list[str] = []
     for node in graph:
@@ -27,11 +27,18 @@ def topological_sort(graph: Dict[str, list[str]]):
     
     # ソート結果を格納するリスト
     sorted_order: list[str] = []
+    # 循環参照を検出するための集合
+    visited: set[str] = set()
 
     # キューからノードを取り出しながら処理
     while queue:
         # 入次数が0のノードを1つ取り出す
         node = queue.pop(0)
+        # TODO: 以下の処理では循環参照を検出できない？？
+        # すでに処理中のノードを再度見つけたら循環参照と判断
+        if node in visited:
+            raise ValueError(f"Circular reference detected involving symbol: {node}")
+        visited.add(node)
         sorted_order.append(node)
 
         # 取り出したノードに隣接するノードの入次数を1減らす
@@ -41,5 +48,23 @@ def topological_sort(graph: Dict[str, list[str]]):
             # 入次数が0になったらキューに追加
             if in_degree[neighbor] == 0:
                 queue.append(neighbor)
-    
+            
     return sorted_order
+
+
+# # テストコード
+# graph = {
+#     # A->B,C; B->E; C->E,F; D->C,E; E->null; F->E; G->F
+#     'A': ['B', 'C'],
+#     'B': ['E'],
+#     'C': ['E', 'F'],
+#     'D': ['C', 'E'],
+#     # 'E': [], # 循環参照なし
+#     'E': ['G'], # 循環参照あり
+#     'F': ['E'],
+#     'G': ['F'],
+#     'H': []
+# }
+
+# sorted_order = topological_sort(graph)
+# print("Resolved order:", sorted_order)
