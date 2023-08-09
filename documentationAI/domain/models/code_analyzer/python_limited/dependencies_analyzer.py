@@ -86,7 +86,8 @@ class DependenciesAnalyzer:
                     import_symbols.append((alias.name, alias.asname or alias.name))
             else:
                 for alias in node.names:
-                    import_symbols.append((node.module, alias.name))
+                    # TODO: 今はtype-ignoreしてあるが，安全性を今一度検証しておく必要がある。
+                    import_symbols.append((node.module, alias.name))    # type: ignore
         print(import_symbols)
 
         class_def_nodes: set[ast.ClassDef] = set()
