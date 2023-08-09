@@ -211,3 +211,11 @@ Pythonを用いたドメイン駆動開発に興味があるのですね。オ�
 **`from foo import *`についても，大変そうやから今回は対応したくない。なぜなら，`import *`の場合だけは実際にファイルを参照しないとどんな変数をインポートしてるかわからないから。**
 
 ローカルのdependency_analyzer開発用のコードがとりあえずできた。一旦寝るので，これのデバッグから再開したい。
+
+# 08/09
+PythonCodeAnalyzerとかができた。これを，DIコンテナの中でもIDependenciesAnalyzerとかを使って疎結合化しようとも思ったが，まずはわかりやすく実装することが先決だと思ってやめた。すなわち，DIコンテナの中には抽象的にdependencies_analyzerとするのではなく，python_dependencies_analyzerのように書くことにした。**いずれは，ココもABCを使っていい感じに抽象化して書きたい**
+
+あと，PythonDependenciesAnalyzerクラスは，初期化時にpackage_nameを受け取る必要がある。だから，DIコンテナから動的に引数を指定して取得できるようにした。
+
+**インポート文もトップレベルシンボルに含めるのはさすがに無駄すぎるから，そこは消してしまったほうがいいかも！！**　　
+**てか，たぶん[dependencies_analyzer.py](../documentationAI/domain/models/code_analyzer/python_limited/dependencies_analyzer.py)のトップレベルシンボルを収集するってところ，実体としては全シンボル取得しちゃってると思う。だから，classの中だったらメンバやメソッドとして扱うのと同様のロジックで，関数の中とかやったら見ないようにするべきである。**
