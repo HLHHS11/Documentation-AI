@@ -3,6 +3,7 @@ from dependency_injector import containers, providers
 from documentationAI.interfaces.cli import CLI
 from documentationAI.interfaces.router import Router
 from documentationAI.interfaces.handlers import routes
+from documentationAI.domain.models.code_analyzer.python_limited.dependencies_analyzer import PythonDependenciesAnalyzer
 
 
 class Container(containers.DeclarativeContainer):
@@ -22,6 +23,15 @@ class Container(containers.DeclarativeContainer):
         router = router
     )
 
+    # PythonDependenciesAnalyerのコンストラクタ引数package_nameは，動的に指定される
+    # コンテナの呼出側で，以下を実行することで得られる。
+    # container.package_name.override("my_package")
+    # analyzer = container.python_dependencies_analyzer()
+    package_name = providers.Singleton(str)
+    python_dependencies_analyzer = providers.Singleton(
+        PythonDependenciesAnalyzer,
+        package_name = package_name
+    )
+
 
 container = Container()
-
