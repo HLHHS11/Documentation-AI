@@ -4,10 +4,12 @@ import documentationAI.domain.models.code_analyzer.python_limited.dependencies_a
 
 
 def test_analyze_dependencies():
+    # NOTE: 以下のfilepathは，テスト実行環境に応じて変更する必要があります。本来はコード自体を環境に依存しないようにする必要がありますが…
     file_path = "/home/yama/Documents/Programming/documentation-AI/documentationAI/container.py"
     package_name = "documentationAI"
-    analyzer = dependencies_analyzer.DependenciesAnalyzer(package_name)
-    result = analyzer.analyze(file_path)
+    analyzer = dependencies_analyzer.PythonDependenciesAnalyzer(package_name)
+    namespace, result = analyzer.analyze(file_path)
+    print(f"==={namespace}===")
     for symbol_name, dependencies in result.items():
         print(symbol_name)
         for dependency in dependencies:
