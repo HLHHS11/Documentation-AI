@@ -87,7 +87,8 @@ class PythonDependenciesAnalyzer(IDependenciesAnalyzer):
                 ast.FunctionDef, ast.ClassDef, ast.AsyncFunctionDef,
                 ast.AnnAssign, ast.AugAssign,
                 ast.Assign,
-                ast.Import, ast.ImportFrom)):
+                # ast.Import, ast.ImportFrom    # NOTE: import文まで入れてしまうと，不用意に扱うべきシンボルが増えてしまうので除外
+            )):
                 top_level_symbol_nodes.append(node)
         return top_level_symbol_nodes
 
