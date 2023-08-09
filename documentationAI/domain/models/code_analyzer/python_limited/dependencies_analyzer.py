@@ -1,27 +1,42 @@
 import ast
 from typing import Dict, Tuple
 
+from documentationAI.domain.models.code_analyzer.abc import ISymbolInfo, IDependenciesAnalyzer
+from documentationAI.domain.models.code_analyzer.python_limited.utils import filepath_to_namespace
 
-class Dependency:
+
+# Dependencyというより，シンボル名とパッケージ名をまとめたものだ。このクラスの良い命名はないか？？
+# たとえば，
+class PythonSymbolInfo(ISymbolInfo):
 
     def __init__(self, namespace: str, symbol_name: str):
         self.namespace: str = namespace
         self.symbol_name: str = symbol_name
 
     def __eq__(self, other: object) -> bool:
-        if isinstance(other, Dependency):
+        if isinstance(other, PythonSymbolInfo):
             return self.namespace == other.namespace and self.symbol_name == other.symbol_name
         else:
             return False
+    
+    # ネームスペースとシンボル名を":"で結合した文字列を返す
+    def stringify(self) -> str:
+        return f"{self.namespace}:{self.symbol_name}"
+    
+    @classmethod
+    def parse(cls, stringified: str) -> 'PythonSymbolInfo':
+        namespace, symbol_name = stringified.split(':')
+        return cls(namespace, symbol_name)
 
 
-class DependenciesAnalyzer:
+class PythonDependenciesAnalyzer(IDependenciesAnalyzer):
 
     def __init__(self, package_name: str):
         self.package_name: str = package_name        
 
 
-    def analyze(self, file_path: str) -> Dict[str, list[Dependency]]:
+    # NOTE: Pylanceは`PythonSymbolInfo`と書いたらダメで`ISymbolInfo`と言ってくるので，`type: ignore`している。
+    def analyze(self, file_path: str) -> Tuple[str, Dict[str, list[PythonSymbolInfo]]]:   # type: ignore
         with open(file_path, 'r') as file:
             tree = ast.parse(file.read())
         
@@ -49,8 +64,11 @@ class DependenciesAnalyzer:
         # すなわち，「importまたはfrom import文でインポートしてきたシンボル」が，各top_level_symbolに依存されているかどうか調べる
         symbols_dependencies = self._analyze_dependencies(top_level_symbol_nodes, target_import_nodes)
 
-        # それらをまとめた辞書を返す
-        return symbols_dependencies
+        # 扱ったファイルのネームスペースと，symbols_dependenciesをタプルで返す
+        # 扱ったファイルのパスを，self.package_name起点のネームスペースに変換 (self.package)
+        namespace = filepath_to_namespace(file_path, self.package_name)
+
+        return (namespace, symbols_dependencies)
 
 
     def _collect_imports(self, tree: ast.AST) -> list[ast.Import|ast.ImportFrom]:
@@ -74,9 +92,9 @@ class DependenciesAnalyzer:
         return top_level_symbol_nodes
 
 
-    def _analyze_dependencies(self, top_level_symbol_nodes: list[ast.AST], import_nodes: list[ast.Import|ast.ImportFrom]) -> Dict[str, list[Dependency]]:
+    def _analyze_dependencies(self, top_level_symbol_nodes: list[ast.AST], import_nodes: list[ast.Import|ast.ImportFrom]) -> Dict[str, list[PythonSymbolInfo]]:
 
-        symbols_dependencies: Dict[str, list[Dependency]] = {}
+        symbols_dependencies: Dict[str, list[PythonSymbolInfo]] = {}
 
         import_symbols: list[Tuple[str, str]] = []
         for node in import_nodes:
@@ -126,12 +144,12 @@ class DependenciesAnalyzer:
                 symbol_name = None
 
             if symbol_name:
-                dependencies: list[Dependency] = []
+                dependencies: list[PythonSymbolInfo] = []
                 for child in ast.walk(node):
                     if isinstance(child, ast.Name):
                         for namespace, import_symbol in import_symbols:
                             if child.id == import_symbol:
-                                dependency = Dependency(namespace, import_symbol)
+                                dependency = PythonSymbolInfo(namespace, import_symbol)
                                 # HACK: 同一の名前は重複させないようにしたい。
                                 if dependency not in dependencies:  # inは==による比較と等価であるらしい。そして，値オブジェクトとしての比較には__eq__()が使える。
                                     dependencies.append(dependency)
