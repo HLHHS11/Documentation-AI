@@ -4,7 +4,7 @@ from documentationAI.interfaces.cli import CLI
 from documentationAI.interfaces.router import Router
 from documentationAI.interfaces.handlers import routes
 from documentationAI.domain.models.code_analyzer.python_limited.dependencies_analyzer import PythonDependenciesAnalyzer
-
+from documentationAI.domain.models.code_analyzer.python_limited.code_analyzer import PythonCodeAnalyzer
 
 class Container(containers.DeclarativeContainer):
 
@@ -31,6 +31,11 @@ class Container(containers.DeclarativeContainer):
     python_dependencies_analyzer = providers.Singleton(
         PythonDependenciesAnalyzer,
         package_name = package_name
+    )
+
+    python_code_analyzer = providers.Singleton(
+        PythonCodeAnalyzer,
+        dependencies_analyzer = python_dependencies_analyzer
     )
 
 
