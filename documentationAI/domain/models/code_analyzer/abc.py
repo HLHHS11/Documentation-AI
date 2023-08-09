@@ -23,7 +23,7 @@ class ICodeAnalyzer(abc.ABC):
         self.dependencies_analyzer = dependencies_analyzer
 
     @abc.abstractmethod
-    def generate_dag(self, root_dir: str) -> Dict[str, list[str]]:
+    def generate_dag(self, package_root_dir: str) -> Dict[str, list[str]]:
         pass
 
 
