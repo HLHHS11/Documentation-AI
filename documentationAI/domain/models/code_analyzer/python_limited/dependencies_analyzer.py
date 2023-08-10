@@ -106,16 +106,17 @@ class PythonDependenciesAnalyzer(IDependenciesAnalyzer):
 
         symbols_dependencies: Dict[str, list[PythonSymbolInfo]] = {}
 
-        import_symbols: list[Tuple[str, str]] = []
+        import_symbols: list[Tuple[str, str, bool]] = []    # (namespace, symbol_name, is_import)
+
         for node in import_nodes:
             if isinstance(node, ast.Import):
                 for alias in node.names:
                     # 以下の第２引数を，import asの場合にはそのエイリアスを入れてあげるようにしたい
-                    import_symbols.append((alias.name, alias.asname or alias.name))
-            else:
+                    import_symbols.append((alias.name, alias.asname or alias.name, True))
+            else:   # ast.ImportFrom
                 for alias in node.names:
                     # TODO: 今はtype-ignoreしてあるが，安全性を今一度検証しておく必要がある。
-                    import_symbols.append((node.module, alias.name))    # type: ignore
+                    import_symbols.append((node.module, alias.name, False))    # type: ignore
 
         class_def_nodes: set[ast.ClassDef] = set()
         for node in top_level_symbol_nodes:
@@ -153,15 +154,15 @@ class PythonDependenciesAnalyzer(IDependenciesAnalyzer):
                 symbol_name = None
 
             if symbol_name:
-                dependencies: list[PythonSymbolInfo] = []
+                symbol_infos: list[PythonSymbolInfo] = []
                 for child in ast.walk(node):
                     if isinstance(child, ast.Name):
-                        for namespace, import_symbol in import_symbols:
+                        for namespace, import_symbol, is_import in import_symbols:
                             if child.id == import_symbol:
-                                dependency = PythonSymbolInfo(namespace, import_symbol)
+                                dependency = PythonSymbolInfo(namespace, import_symbol if not is_import else "*")
                                 # HACK: 同一の名前は重複させないようにしたい。
-                                if dependency not in dependencies:  # inは==による比較と等価であるらしい。そして，値オブジェクトとしての比較には__eq__()が使える。
-                                    dependencies.append(dependency)
-                symbols_dependencies[symbol_name] = dependencies
+                                if dependency not in symbol_infos:  # inは==による比較と等価であるらしい。そして，値オブジェクトとしての比較には__eq__()が使える。
+                                    symbol_infos.append(dependency)
+                symbols_dependencies[symbol_name] = symbol_infos
 
         return symbols_dependencies
