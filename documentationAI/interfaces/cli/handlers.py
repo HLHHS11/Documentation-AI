@@ -1,9 +1,7 @@
 # TODO: ハンドラを定義して，辞書`routes`に名前付きで登録してください。
-# TODO: ハンドラの引数は現状`params: list[str]`として受け取っていますが，変更を検討しても良いかもしれません。
+# TODO: 現状，ハンドラはパラメータとして引数`params: list[str]`として受け取っていますが，変更を検討しても良いかもしれません。
 
 from typing import Dict, Callable
-
-# from documentationAI.container import container
 
 
 def help(params: list[str]) -> None:
@@ -23,9 +21,22 @@ def exit(params: list[str]) -> None:
 
 
 def documentation(params: list[str]) -> None:
-    # TODO: Implement the code to generate documentation using the Documentation-AI system.
-    print("Generating documentation...")
+    print("Starting documentation generator...")
+    while True:
+        root_dir = input("Enter the dilectory to generate documentation for: ")
+        package_name = input("Enter the python package name: ") # TODO: Pythonパッケージ専用の記述になってしまっているので注意！
 
+        # TODO: バリデーションをもっと厳格に行うこと！
+        if not (root_dir and package_name):
+            print("Invalid input. Please try again.")
+            continue
+        
+        # NOTE: トップレベルでインポートすると循環参照になるので，関数内で遅延インポートする。
+        from documentationAI.container import container
+        documentation_generator_service = container.documentation_generator_service()
+        documentation_generator_service.generate_package_documentation(root_dir, package_name)
+        break
+    
 
 def optimize_code(params: list[str]):
     # TODO: Implement the code to provide code optimization suggestions using the Documentation-AI system.
