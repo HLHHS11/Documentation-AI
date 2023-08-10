@@ -3,7 +3,10 @@ import os
 
 def filepath_to_namespace(filepath: str, package_name: str = "") -> str:
     # ファイルパスの/や\を.に置換し、.pyを削除する
-    namespace = filepath.replace(os.sep, '.').replace('.py', '')
+    # if filepath.endswith('.py'):
+    removed_py = filepath[:-3]
+    
+    namespace = removed_py.replace(os.sep, '.')
 
     # package_nameが指定されていた場合、ネームスペースをそのパッケージ名で始まるものに変換する
     if package_name:
