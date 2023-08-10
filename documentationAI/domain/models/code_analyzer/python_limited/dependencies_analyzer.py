@@ -116,7 +116,6 @@ class PythonDependenciesAnalyzer(IDependenciesAnalyzer):
                 for alias in node.names:
                     # TODO: 今はtype-ignoreしてあるが，安全性を今一度検証しておく必要がある。
                     import_symbols.append((node.module, alias.name))    # type: ignore
-        print(import_symbols)
 
         class_def_nodes: set[ast.ClassDef] = set()
         for node in top_level_symbol_nodes:
@@ -154,7 +153,6 @@ class PythonDependenciesAnalyzer(IDependenciesAnalyzer):
                 symbol_name = None
 
             if symbol_name:
-                print(f"symbol_name: {symbol_name}")
                 dependencies: list[PythonSymbolInfo] = []
                 for child in ast.walk(node):
                     if isinstance(child, ast.Name):
