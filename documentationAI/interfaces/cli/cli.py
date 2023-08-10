@@ -21,6 +21,7 @@ class CLI:
     
 
     def handle(self, request: str) -> None:
+        # NOTE: 現時点ではコマンドパラメータを扱うことはないが，必要に応じてコマンドパラメータのパースも行うようにすること。
         self.router.handle(request, [])
 
 
