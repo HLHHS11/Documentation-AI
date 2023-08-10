@@ -33,7 +33,20 @@ class PythonCodeAnalyzer(ICodeAnalyzer):
         for namespace, dependencies in overall_dependencies.items():
             for symbol_name, dependent_symbol_infos in dependencies.items():
                 symbol_info_str = PythonSymbolInfo(namespace, symbol_name).stringify()
-                dag[symbol_info_str] = [dependent_symbol_info.stringify() for dependent_symbol_info in dependent_symbol_infos]
+                dag[symbol_info_str] = []
+                for dependent_symbol_info in dependent_symbol_infos:
+                    # 依存先の情報の中に，symbol_name == '*'のものがある場合，当該ファイル内のすべてのトップレベルシンボルをインポートすることを意味する
+                    if dependent_symbol_info.symbol_name == '*':
+                        # overall_dependencies[dependent_symbol_info.namespace]の中のすべてのシンボルを依存関係に追加
+                        # print("---------")
+                        # print(dependent_symbol_info.namespace)
+                        # print(overall_dependencies[dependent_symbol_info.namespace])
+                        # print("---------")
+                        for each_symbol_name in overall_dependencies[dependent_symbol_info.namespace].keys():
+                            dag[symbol_info_str].append(PythonSymbolInfo(dependent_symbol_info.namespace, each_symbol_name).stringify())
+                    else:
+                        dag[symbol_info_str].append(dependent_symbol_info.stringify())
+                # dag[symbol_info_str] = [dependent_symbol_info.stringify() for dependent_symbol_info in dependent_symbol_infos]
                     
         return dag
 
