@@ -1,8 +1,8 @@
 from dependency_injector import containers, providers
 
-from documentationAI.interfaces.cli import CLI
-from documentationAI.interfaces.router import Router
-from documentationAI.interfaces.handlers import routes
+from documentationAI.interfaces.cli.cli import CLI
+from documentationAI.interfaces.cli.router import Router
+from documentationAI.interfaces.cli.handlers import routes
 from documentationAI.domain.models.code_analyzer.python_limited.dependencies_analyzer import PythonDependenciesAnalyzer
 from documentationAI.domain.models.code_analyzer.python_limited.code_analyzer import PythonCodeAnalyzer
 

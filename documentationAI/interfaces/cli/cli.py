@@ -1,6 +1,6 @@
 # from typing import Callable
 
-from documentationAI.interfaces.router import Router
+from documentationAI.interfaces.cli.router import Router
 
 
 class CLI:
