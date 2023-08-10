@@ -21,6 +21,9 @@ class PythonSymbolInfo(ISymbolInfo):
     def stringify(self) -> str:
         return f"{self.namespace}:{self.symbol_name}"
     
+    def __str__(self) -> str:
+        return self.stringify()
+    
     @classmethod
     def parse(cls, stringified: str) -> 'PythonSymbolInfo':
         namespace, symbol_name = stringified.split(':')
