@@ -82,6 +82,8 @@ class PythonDependenciesAnalyzer(IDependenciesAnalyzer):
     # TODO: 以下のコードは自動生成なので，正確性は検証が必要
     def _get_top_level_symbol_nodes(self, tree: ast.AST) -> list[ast.AST]:
         top_level_symbol_nodes: list[ast.AST] = []
+
+        function_def_nodes: set[ast.FunctionDef|ast.AsyncFunctionDef] = set()
         for node in ast.walk(tree):
             if isinstance(node, (
                 ast.FunctionDef, ast.ClassDef, ast.AsyncFunctionDef,
@@ -89,7 +91,21 @@ class PythonDependenciesAnalyzer(IDependenciesAnalyzer):
                 ast.Assign,
                 # ast.Import, ast.ImportFrom    # NOTE: import文まで入れてしまうと，不用意に扱うべきシンボルが増えてしまうので除外
             )):
-                top_level_symbol_nodes.append(node)
+                # ここでfunction_def_nodes.add(node)してしまうと，トップレベルでない関数定義文（関数内の関数定義）も含まれてしまう
+                # ※このコードの場合，以下のifに関数定義ノードが入ることはないので，重複して追加してしまうことはない。
+                # if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                #     top_level_symbol_nodes.append(node)
+                #     function_def_nodes.add(node)
+
+                for function_def_node in function_def_nodes:
+                    if node in ast.walk(function_def_node): # 関数（もしくはメソッド）定義内に存在する文は，トップレベルではないとみなして除外
+                        break
+                else:
+                    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                        function_def_nodes.add(node)
+                    top_level_symbol_nodes.append(node)
+                    continue
+            
         return top_level_symbol_nodes
 
 
@@ -145,6 +161,7 @@ class PythonDependenciesAnalyzer(IDependenciesAnalyzer):
                 symbol_name = None
 
             if symbol_name:
+                print(f"symbol_name: {symbol_name}")
                 dependencies: list[PythonSymbolInfo] = []
                 for child in ast.walk(node):
                     if isinstance(child, ast.Name):
