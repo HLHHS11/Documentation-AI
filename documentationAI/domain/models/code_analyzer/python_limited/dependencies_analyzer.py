@@ -5,8 +5,6 @@ from documentationAI.domain.models.code_analyzer.abc import ISymbolInfo, IDepend
 from documentationAI.domain.models.code_analyzer.python_limited.utils import filepath_to_namespace
 
 
-# Dependencyというより，シンボル名とパッケージ名をまとめたものだ。このクラスの良い命名はないか？？
-# たとえば，
 class PythonSymbolInfo(ISymbolInfo):
 
     def __init__(self, namespace: str, symbol_name: str):
@@ -91,12 +89,7 @@ class PythonDependenciesAnalyzer(IDependenciesAnalyzer):
                 ast.Assign,
                 # ast.Import, ast.ImportFrom    # NOTE: import文まで入れてしまうと，不用意に扱うべきシンボルが増えてしまうので除外
             )):
-                # ここでfunction_def_nodes.add(node)してしまうと，トップレベルでない関数定義文（関数内の関数定義）も含まれてしまう
-                # ※このコードの場合，以下のifに関数定義ノードが入ることはないので，重複して追加してしまうことはない。
-                # if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                #     top_level_symbol_nodes.append(node)
-                #     function_def_nodes.add(node)
-
+                
                 for function_def_node in function_def_nodes:
                     if node in ast.walk(function_def_node): # 関数（もしくはメソッド）定義内に存在する文は，トップレベルではないとみなして除外
                         break
