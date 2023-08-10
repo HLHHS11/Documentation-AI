@@ -3,7 +3,7 @@ from dependency_injector import containers, providers
 from documentationAI.interfaces.cli.cli import CLI
 from documentationAI.interfaces.cli.router import Router
 from documentationAI.interfaces.cli.handlers import routes
-from documentationAI.domain.models.code_analyzer.python_limited.dependencies_analyzer import PythonDependenciesAnalyzer
+from documentationAI.domain.models.code_analyzer.python_limited.dependencies_analyzer import PythonDependenciesAnalyzer, parse_python_symbol_str
 from documentationAI.domain.models.code_analyzer.python_limited.code_analyzer import PythonCodeAnalyzer
 from documentationAI.application.documentation_generator import DocumentationGeneratorService
 from documentationAI.domain.services.code_analyze_service import CodeAnalyzeService
@@ -51,10 +51,12 @@ class Container(containers.DeclarativeContainer):
     
     # NOTE: オーバーライド必須
     package_name = providers.Callable(_package_name_undefined_error)
+
     
     dependencies_analyzer = providers.Singleton(
         PythonDependenciesAnalyzer, # TODO: 抽象クラスによるバインドを行いたい。いずれ多言語対応する際に，コード解析器を動的に切り替えられるようにする必要あり。
-        package_name = package_name
+        package_name = package_name,
+        parser = parse_python_symbol_str    # TODO: このパーサーを直接指定するのではなく，クラス変数の１つparserとして登録できないか？？（そうすれば，他言語対応の際にも差し替える部分や動的に入れる部分がわかりやすくなる。）
     )
 
     code_analyzer = providers.Singleton(

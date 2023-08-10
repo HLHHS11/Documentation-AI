@@ -1,5 +1,5 @@
 import ast
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Callable
 
 from documentationAI.domain.models.code_analyzer.abc import ISymbolInfo, IDependenciesAnalyzer
 from documentationAI.domain.models.code_analyzer.python_limited.utils import filepath_to_namespace
@@ -30,10 +30,15 @@ class PythonSymbolInfo(ISymbolInfo):
         return f"PythonSymbolInfo(namespace={self.namespace}, symbol_name={self.symbol_name})"
 
 
+def parse_python_symbol_str(symbol_str: str) -> PythonSymbolInfo:
+    return PythonSymbolInfo.parse(symbol_str)
+
+
 class PythonDependenciesAnalyzer(IDependenciesAnalyzer):
 
-    def __init__(self, package_name: str):
-        self.package_name: str = package_name        
+    def __init__(self, package_name: str, parser: Callable[[str], PythonSymbolInfo]):
+        self.package_name: str = package_name
+        self.parser: Callable[[str], PythonSymbolInfo] = parser    
 
 
     # NOTE: Pylanceは`PythonSymbolInfo`と書いたらダメで`ISymbolInfo`と言ってくるので，`type: ignore`している。
@@ -71,6 +76,11 @@ class PythonDependenciesAnalyzer(IDependenciesAnalyzer):
 
         return (namespace, symbols_dependencies)
 
+
+    # HACK: 強引に`PythonSymbolInfo`クラスを参照しており，危険。一時的な対応である。
+    #       いずれは，たとえばDIコンテナによって，うまくパーサーも注入されるようにできると良い。
+    def parse_symbol_str(self, symbol_str: str) -> PythonSymbolInfo:
+        return self.parser(symbol_str)
 
     def _collect_imports(self, tree: ast.AST) -> list[ast.Import|ast.ImportFrom]:
         import_statements: list[ast.Import|ast.ImportFrom] = []
