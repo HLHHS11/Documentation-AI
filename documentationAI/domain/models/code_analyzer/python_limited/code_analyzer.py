@@ -45,6 +45,7 @@ class PythonCodeAnalyzer(ICodeAnalyzer):
         return dag
     
     
+    
     def parse_symbol_str(self, symbol_str: str) -> PythonSymbolInfo:
         return self.dependencies_analyzer.parse_symbol_str(symbol_str)  # type: ignore
 

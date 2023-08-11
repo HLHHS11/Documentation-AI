@@ -218,4 +218,10 @@ PythonCodeAnalyzerとかができた。これを，DIコンテナの中でもIDe
 あと，PythonDependenciesAnalyzerクラスは，初期化時にpackage_nameを受け取る必要がある。だから，DIコンテナから動的に引数を指定して取得できるようにした。
 
 **インポート文もトップレベルシンボルに含めるのはさすがに無駄すぎるから，そこは消してしまったほうがいいかも！！**　　
-**てか，たぶん[dependencies_analyzer.py](../documentationAI/domain/models/code_analyzer/python_limited/dependencies_analyzer.py)のトップレベルシンボルを収集するってところ，実体としては全シンボル取得しちゃってると思う。だから，classの中だったらメンバやメソッドとして扱うのと同様のロジックで，関数の中とかやったら見ないようにするべきである。**
+**てか，たぶん[dependencies_analyzer.py](../documentationAI/domain/models/code_analyzer/python_limited/dependencies_analyzer.py)のトップレベルシンボルを収集するってところ，実体としては全シンボル取得しちゃってると思う。だから，classの中だったらメンバやメソッドとして扱うのと同様のロジックで，関数の中とかやったら見ないようにするべきである。**  
+→クラスのメンバー・メソッドであるかどうか判定するのと同様のロジックで，関数定義(FunctionDef, AsyncFunctionDef)を集合オブジェクトに入れておいて，そこにnodeが含まれたらアウト，含まれてなかったらトップレベルと判断する，というロジックを追加した。
+
+クラスのインポートにどう対応する？？現状，クラス名.メソッド名という形でひとつのシンボルみたいにしちゃってるけど…  
+ex: ドキュメント生成サービス側で，クラスをちゃんと解決する←でも汚いコードになりそう。いずれちゃんと作り直す必要がある。
+
+まずドキュメンテーション生成機能をつくるより先に，CLIで本当にPythonCodeAnalyzerとかが動くのか確かめたいので，そのへんの枠組みを作っていきたい。

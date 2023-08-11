@@ -5,7 +5,35 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: モジュール",
+            "name": "コード解析ドメインサービスのテスト",
+            "type": "python",
+            "request": "launch",
+            "module": "documentationAI.test.domain.services.code_analyze_service",
+            "justMyCode": true
+        },
+        {
+            "name": "ドキュメンテーション生成アプリケーションサービスのテスト",
+            "type": "python",
+            "request": "launch",
+            "module": "documentationAI.test.application.documentation_generator",
+            "justMyCode": true
+        },
+        {
+            "name": "結合テスト_for_documentationAI",
+            "type": "python",
+            "request": "launch",
+            "module": "documentationAI",
+            "justMyCode": true
+        },
+        {
+            "name": "Pythonコード分析器のテスト",
+            "type": "python",
+            "request": "launch",
+            "module": "documentationAI.test.domain.models.code_analyzer.python_limited.code_analyzer",
+            "justMyCode": true
+        },
+        {
+            "name": "Pythonソース依存関係解析器のテスト",
             "type": "python",
             "request": "launch",
             "module": "documentationAI.test.domain.models.code_analyzer.python_limited.dependencies_analyzer",

@@ -3,6 +3,10 @@ from typing import Dict, Tuple
 
 class ISymbolInfo(abc.ABC):
 
+    def __init__(self, namespace: str, symbol_name: str):
+        self.namespace: str = namespace
+        self.symbol_name: str = symbol_name
+
     @abc.abstractmethod
     def stringify(self) -> str:
         pass
@@ -11,7 +15,7 @@ class ISymbolInfo(abc.ABC):
     @abc.abstractmethod
     def parse(cls, stringified: str) -> 'ISymbolInfo':
         pass
-
+    
 
 class IDependenciesAnalyzer(abc.ABC):
 
@@ -21,6 +25,14 @@ class IDependenciesAnalyzer(abc.ABC):
 
     @abc.abstractmethod
     def parse_symbol_str(self, symbol_str: str) -> ISymbolInfo:
+        pass
+
+    @abc.abstractmethod
+    def get_symbol_definition(self, file_path: str, symbol_name: str) -> str:
+        pass
+
+    @abc.abstractmethod
+    def get_file_contents(self, file_path: str) -> str:
         pass
 
 

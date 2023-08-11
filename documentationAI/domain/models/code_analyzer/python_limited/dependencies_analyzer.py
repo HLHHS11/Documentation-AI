@@ -1,4 +1,5 @@
 import ast
+import os
 from typing import Dict, Tuple, Callable
 
 from documentationAI.domain.models.code_analyzer.abc import ISymbolInfo, IDependenciesAnalyzer
@@ -30,19 +31,40 @@ class PythonSymbolInfo(ISymbolInfo):
         return f"PythonSymbolInfo(namespace={self.namespace}, symbol_name={self.symbol_name})"
 
 
-def parse_python_symbol_str(symbol_str: str) -> PythonSymbolInfo:
-    return PythonSymbolInfo.parse(symbol_str)
+def python_symbol_parser(args: list[str], mode: str) -> PythonSymbolInfo|str:
+    """_summary_
+    `GetSymbolInfo`モード: 引数の文字列を`PythonSymbolInfo`に変換して返します。`args[0] = symbol_str = <namespace>:<symbol_name>`の形式  
+    `GetFilePath`モード: 引数の文字列からファイルパスを取得して返します。`args[0] = symbol_str = <namespace>:<symbol_name>, args[1] = <root_dir_path>`の形式
+    Args:
+        args (list[str]): 引数の文字列のリスト
+        mode (str): モードを指定する文字列
+
+    Returns:
+        PythonSymbolInfo|str: _description_
+    """    
+    if mode == "GetSymbolInfo":
+        symbol_str = args[0]
+        return PythonSymbolInfo.parse(symbol_str)
+    elif mode == "GetFilePath":
+        symbol_str = args[0]
+        root_dir_path = args[1]
+        namespace, _ = symbol_str.split(':')
+        return os.path.join(root_dir_path, namespace.replace('.', os.sep) + '.py')
+    else:
+        raise ValueError(f"Invalid mode: {mode}")
+        
 
 
 class PythonDependenciesAnalyzer(IDependenciesAnalyzer):
 
-    def __init__(self, package_name: str, parser: Callable[[str], PythonSymbolInfo]):
+    def __init__(self, package_name: str, parser: Callable[[list[str], str], PythonSymbolInfo|str]):
         self.package_name: str = package_name
-        self.parser: Callable[[str], PythonSymbolInfo] = parser    
+        self.parser: Callable[[list[str], str], PythonSymbolInfo|str] = parser    
 
 
     # NOTE: Pylanceは`PythonSymbolInfo`と書いたらダメで`ISymbolInfo`と言ってくるので，`type: ignore`している。
     def analyze(self, file_path: str) -> Tuple[str, Dict[str, list[PythonSymbolInfo]]]:   # type: ignore
+
         with open(file_path, 'r') as file:
             tree = ast.parse(file.read())
         
@@ -80,7 +102,8 @@ class PythonDependenciesAnalyzer(IDependenciesAnalyzer):
     # HACK: 強引に`PythonSymbolInfo`クラスを参照しており，危険。一時的な対応である。
     #       いずれは，たとえばDIコンテナによって，うまくパーサーも注入されるようにできると良い。
     def parse_symbol_str(self, symbol_str: str) -> PythonSymbolInfo:
-        return self.parser(symbol_str)
+        result = self.parser([symbol_str], "GetSymbolInfo")
+        return result  # type: ignore
     
 
     # HACK: 本来はこのクラスの責務ではないかも？？
@@ -98,10 +121,12 @@ class PythonDependenciesAnalyzer(IDependenciesAnalyzer):
                 if node.name == symbol_name.split('.')[-1]:
                     return ast.unparse(node)
             elif isinstance(node, (ast.AnnAssign, ast.AugAssign)):
-                if node.target.id == symbol_name.split('.')[-1]:    # TODO: pylance警告が出ている
+                # TODO: pylance警告が出ている
+                if node.target.id == symbol_name.split('.')[-1]:    # type: ignore   
                     return ast.unparse(node)
             elif isinstance(node, ast.Assign):
-                if node.targets[0].id == symbol_name.split('.')[-1]:    # TODO: pylance警告が出ている
+                # TODO: pylance警告が出ている
+                if node.targets[0].id == symbol_name.split('.')[-1]:    # type:ignore
                     return ast.unparse(node)
         
         return ""
