@@ -11,3 +11,6 @@ __pycache__/
 # exclude zip
 # *.zip
 upload.zip
+
+# .env
+.env
