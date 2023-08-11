@@ -107,6 +107,9 @@ class PythonDependenciesAnalyzer(IDependenciesAnalyzer):
         return ""
 
 
+    def get_file_contents(self, file_path: str) -> str:
+        with open(file_path, 'r') as file:  # NOTE: try-exceptは呼出側で行えばよさそう
+            return file.read()
 
 
     def _collect_imports(self, tree: ast.AST) -> list[ast.Import|ast.ImportFrom]:
