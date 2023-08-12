@@ -1,11 +1,11 @@
 from typing import Dict
 import os
 
-from documentationAI.domain.models.code_analyzer.abc import ICodeAnalyzer
-from documentationAI.domain.models.code_analyzer.python_limited.dependencies_analyzer import PythonDependenciesAnalyzer, PythonSymbolInfo
+from documentationAI.domain.models.package_analyzer.abc import IPackageAnalyzer
+from documentationAI.domain.models.package_analyzer.python_limited.module_analyzer import PythonDependenciesAnalyzer, PythonSymbolInfo
 
 
-class PythonCodeAnalyzer(ICodeAnalyzer):
+class PythonCodeAnalyzer(IPackageAnalyzer):
 
     def __init__(
             self,
