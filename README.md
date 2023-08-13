@@ -13,3 +13,29 @@ python3 -m venv venv
 source venv/bin/activate # Windowsの場合venv\Scripts\activate
 pip install -r requirements.txt
 ```
+## 使い方
+``` sh
+# 仮想環境をアクティベート
+source venv/bin/activate
+# プログラムの開始
+python -m documentationAI
+```
+以上のコマンド入力を行うと，コマンド入力画面が出てきますので，`documentation`と入力してください。  
+```
+Welcome to Documentation-AI!
+Type 'help' for available commands or 'exit' to quit.
+>>
+```
+続いて，解析を行いたいPythonプロジェクトのルートディレクトリの絶対パスとパッケージ名を入力してください。  
+たとえば当プロジェクトを解析する場合，それぞれルートディレクトリ: [`.`](.)を表す絶対パス，パッケージ名: `documentationAI`を入力してください。
+```
+Welcome to Documentation-AI!
+Type 'help' for available commands or 'exit' to quit.
+>> documentation
+Starting documentation generator...
+Enter the absolute dilectory path to generate documentation for:
+    <PROJECT_ROOT_ABS_PATH>
+Enter the python package name:
+    <PACKAGE_NAME>
+```
+これらの操作を行うと，[`./generated_documentation`](./generated_documentation)内の該当ディレクトリ内に，順次ドキュメントが生成・格納されていきます。
