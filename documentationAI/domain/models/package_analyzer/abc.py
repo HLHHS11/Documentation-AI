@@ -32,12 +32,13 @@ class IAnalyzerHelper(abc.ABC):
     def parse_symbol_str(self, symbol_str: str) -> ISymbolInfo:
         pass
 
+
     @abc.abstractmethod
-    def filepath_to_namespace(self, filepath: str, package_name: str) -> str:
+    def abspath_to_namespace(self, abspath: str, package_name: str) -> str:
         pass
 
     @abc.abstractmethod
-    def namespace_to_relativepath(self, namespace: str) -> str:
+    def namespace_to_abspath(self, namespace: str, root_dir: str) -> str:
         pass
 
 
@@ -54,11 +55,11 @@ class IModuleAnalyzer(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def get_symbol_definition(self, file_path: str, symbol_name: str) -> str:
+    def get_symbol_impl(self, file_path: str, symbol_name: str) -> str:
         pass
 
     @abc.abstractmethod
-    def get_file_contents(self, file_path: str) -> str:
+    def get_module_impl(self, file_path: str) -> str:
         pass
 
 

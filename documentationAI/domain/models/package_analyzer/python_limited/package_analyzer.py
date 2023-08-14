@@ -1,17 +1,19 @@
 from typing import Dict
 import os
 
-from documentationAI.domain.models.package_analyzer.abc import IPackageAnalyzer
-from documentationAI.domain.models.package_analyzer.python_limited.module_analyzer import PythonDependenciesAnalyzer, PythonSymbolInfo
+from documentationAI.domain.models.package_analyzer.abc import IAnalyzerHelper, IPackageAnalyzer
+from documentationAI.domain.models.package_analyzer.python_limited.symbol_info import PythonSymbolInfo
+from documentationAI.domain.models.package_analyzer.python_limited.module_analyzer import PythonModuleAnalyzer
 
 
-class PythonCodeAnalyzer(IPackageAnalyzer):
+class PythonPackageAnalyzer(IPackageAnalyzer):
 
     def __init__(
             self,
-            dependencies_analyzer: PythonDependenciesAnalyzer,
+            module_analyzer: PythonModuleAnalyzer,
+            helper: IAnalyzerHelper
     ):
-        super().__init__(dependencies_analyzer)
+        super().__init__(module_analyzer, helper)
     
 
     # PythonDependenciesAnalyzerを使って，root_dir以下のファイルを解析し，依存関係を取得
@@ -43,11 +45,6 @@ class PythonCodeAnalyzer(IPackageAnalyzer):
                         dag[symbol_info_str].append(dependent_symbol_info.stringify())
                     
         return dag
-    
-    
-    
-    def parse_symbol_str(self, symbol_str: str) -> PythonSymbolInfo:
-        return self.dependencies_analyzer.parse_symbol_str(symbol_str)  # type: ignore
 
 
 

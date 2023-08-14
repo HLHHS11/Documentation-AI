@@ -1,34 +1,10 @@
 import ast
 import os
-from typing import Dict, Tuple, Callable
+from typing import Dict, Tuple
 
-from documentationAI.domain.models.package_analyzer.abc import ISymbolInfo, IModuleAnalyzer
-from documentationAI.domain.models.package_analyzer.python_limited.helper import filepath_to_namespace
-
-
-# class PythonSymbolInfo(ISymbolInfo):
-
-#     def __init__(self, namespace: str, symbol_name: str):
-#         self.namespace: str = namespace
-#         self.symbol_name: str = symbol_name
-    
-#     # ネームスペースとシンボル名を":"で結合した文字列を返す
-#     def stringify(self) -> str:
-#         return f"{self.namespace}:{self.symbol_name}"
-    
-#     @classmethod
-#     def parse(cls, stringified: str) -> 'PythonSymbolInfo':
-#         namespace, symbol_name = stringified.split(':')
-#         return cls(namespace, symbol_name)
-
-#     def __eq__(self, other: object) -> bool:
-#         if isinstance(other, PythonSymbolInfo):
-#             return self.namespace == other.namespace and self.symbol_name == other.symbol_name
-#         else:
-#             return False
-    
-#     def __str__(self) -> str:
-#         return f"PythonSymbolInfo(namespace={self.namespace}, symbol_name={self.symbol_name})"
+from documentationAI.domain.models.package_analyzer.abc import IModuleAnalyzer
+from documentationAI.domain.models.package_analyzer.python_limited.helper import PythonAnalyzerHelper
+from documentationAI.domain.models.package_analyzer.python_limited.symbol_info import PythonSymbolInfo
 
 
 def python_symbol_parser(args: list[str], mode: str) -> PythonSymbolInfo|str:
@@ -55,11 +31,12 @@ def python_symbol_parser(args: list[str], mode: str) -> PythonSymbolInfo|str:
         
 
 
-class PythonDependenciesAnalyzer(IModuleAnalyzer):
+class PythonModuleAnalyzer(IModuleAnalyzer):
 
-    def __init__(self, package_name: str, parser: Callable[[list[str], str], PythonSymbolInfo|str]):
+    def __init__(self, package_name: str, helper: PythonAnalyzerHelper):
         self.package_name: str = package_name
-        self.parser: Callable[[list[str], str], PythonSymbolInfo|str] = parser    
+        # self.parser: Callable[[list[str], str], PythonSymbolInfo|str] = parser    
+        self.helper = helper
 
 
     # NOTE: Pylanceは`PythonSymbolInfo`と書いたらダメで`ISymbolInfo`と言ってくるので，`type: ignore`している。
@@ -94,21 +71,18 @@ class PythonDependenciesAnalyzer(IModuleAnalyzer):
 
         # 扱ったファイルのネームスペースと，symbols_dependenciesをタプルで返す
         # 扱ったファイルのパスを，self.package_name起点のネームスペースに変換 (self.package)
-        namespace = filepath_to_namespace(file_path, self.package_name)
+        namespace = self.helper.abspath_to_namespace(file_path, self.package_name)
 
         return (namespace, symbols_dependencies)
 
 
-    # HACK: 強引に`PythonSymbolInfo`クラスを参照しており，危険。一時的な対応である。
-    #       いずれは，たとえばDIコンテナによって，うまくパーサーも注入されるようにできると良い。
     def parse_symbol_str(self, symbol_str: str) -> PythonSymbolInfo:
-        result = self.parser([symbol_str], "GetSymbolInfo")
-        return result  # type: ignore
+        return self.helper.parse_symbol_str(symbol_str)
     
 
     # HACK: 本来はこのクラスの責務ではないかも？？
     # TODO: クラスおよびメソッド・メンバ変数の扱い方を検討する必要がある。
-    def get_symbol_definition(self, file_path: str, symbol_name: str) -> str:
+    def get_symbol_impl(self, file_path: str, symbol_name: str) -> str:
         with open(file_path, 'r') as file:
             tree = ast.parse(file.read())
         # シンボルネームに対応するソース定義を取得。ただし，関数定義やクラス定義の場合は，関数定義やクラス定義の行全体を取得する。
@@ -132,7 +106,7 @@ class PythonDependenciesAnalyzer(IModuleAnalyzer):
         return ""
 
 
-    def get_file_contents(self, file_path: str) -> str:
+    def get_module_impl(self, file_path: str) -> str:
         with open(file_path, 'r') as file:  # NOTE: try-exceptは呼出側で行えばよさそう
             return file.read()
 

@@ -1,17 +1,17 @@
 import os
 
-from documentationAI.domain.services.code_analyze_service import CodeAnalyzeService
-from documentationAI.domain.services.symbol_documentation_generator_service import SymbolDocumentationGeneratorService
+from documentationAI.domain.services.package_analyze_service import PackageAnalyzeService
+from documentationAI.domain.services.symbol_documentation_service import SymbolDocumentationService
 
-class DocumentationGeneratorService:
+class DocumentationService:
 
     def __init__(
             self,
-            code_analyze_service: CodeAnalyzeService,   # NOTE: 抽象クラス`ICodeAnalyzer`を受け取る必要はない
-            symbol_documentation_generator_service: SymbolDocumentationGeneratorService
+            package_analyze_service: PackageAnalyzeService,   # NOTE: 抽象クラス`ICodeAnalyzer`を受け取る必要はない
+            symbol_documentation_service: SymbolDocumentationService
     ):
-        self.code_analyze_service = code_analyze_service
-        self.symbol_documentation_generator_service = symbol_documentation_generator_service
+        self.code_analyze_service = package_analyze_service
+        self.symbol_documentation_generator_service = symbol_documentation_service
     
 
     def generate_package_documentation(self, root_dir: str, package_name: str) -> None:
