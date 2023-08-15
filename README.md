@@ -8,4 +8,6 @@ python3 -m venv venv
 # 仮想環境をアクティベート
 source venv/bin/activate # Windowsの場合venv\Scripts\activate
 pip install -r requirements.txt
+# SQLiteのインストール
+sudo apt-get install sqlite3
 ```
