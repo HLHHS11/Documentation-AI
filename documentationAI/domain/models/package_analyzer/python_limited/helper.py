@@ -1,21 +1,36 @@
 # FIXME: プロジェクトルートディレクトリ名とパッケージ名が同じ場合，正しいネームスペースが得られない！！！
 import os
 
-def filepath_to_namespace(filepath: str, package_name: str = "") -> str:
-    # ファイルパスの/や\を.に置換し、.pyを削除する
-    # if filepath.endswith('.py'):
-    removed_py = filepath[:-3]
+from documentationAI.domain.models.package_analyzer.abc import IAnalyzerHelper
+from documentationAI.domain.models.package_analyzer.python_limited.symbol_info import PythonSymbolInfo
+
+
+class PythonAnalyzerHelper(IAnalyzerHelper):
+
+    def __init__(self):
+        pass
+
+
+    def parse_symbol_str(self, symbol_str: str) -> PythonSymbolInfo:
+        return PythonSymbolInfo.parse(symbol_str)
+
+
+    def abspath_to_namespace(self, abspath: str, package_name: str = "") -> str:
+
+        if abspath.endswith('.py'):
+            abspath = abspath[:-3]
+            namespace = abspath.replace(os.sep, '.')
+
+            # pakcage_nameが指定されていれば，ネームスペースをそのパッケージ名で始まるものに変換する
+            if package_name:
+                package_name_with_dot = package_name + '.'
+                if package_name_with_dot in namespace:
+                    namespace = namespace[namespace.index(package_name_with_dot):]
+            
+            return namespace
+        else:
+            raise ValueError(f"filepath: {abspath} is not python file. (not ends with '.py')")
     
-    namespace = removed_py.replace(os.sep, '.')
 
-    # package_nameが指定されていた場合、ネームスペースをそのパッケージ名で始まるものに変換する
-    if package_name:
-        package_name_with_dot = package_name + '.'
-        if package_name_with_dot in namespace:
-            namespace = namespace[namespace.index(package_name_with_dot):]
-
-    return namespace
-
-# HACK: 絶対パスも得られるようになると便利そうなんだが…
-def namespace_to_relativepath(namespace: str) -> str:
-    return namespace.replace('.', os.sep) + '.py'
+    def namespace_to_abspath(self, namespace: str, root_dir: str) -> str:
+        return os.path.join(root_dir, namespace.replace('.', os.sep) + '.py')
