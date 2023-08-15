@@ -34,7 +34,7 @@ class IAnalyzerHelper(abc.ABC):
 
 
     @abc.abstractmethod
-    def abspath_to_namespace(self, abspath: str, package_name: str) -> str:
+    def abspath_to_namespace(self, abs_path: str, root_dir: str) -> str:    
         pass
 
     @abc.abstractmethod
