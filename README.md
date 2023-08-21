@@ -24,6 +24,7 @@ python3 -m venv venv
 source venv/bin/activate # Windowsの場合venv\Scripts\activate
 pip install -r requirements.txt
 ```
+また，`.env`ファイルにより`OPENAI_API_KEY`を指定してください。（参考: [.env.sample](./.env.sample)）
 ### プログラムの開始
 ``` sh
 # 仮想環境をアクティベート
