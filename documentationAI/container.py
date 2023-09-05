@@ -46,12 +46,12 @@ class Container(containers.DeclarativeContainer):
     # container.package_name.override("my_package")
     # analyzer = container.python_dependencies_analyzer()
 
-    @staticmethod
-    def _package_name_undefined_error() -> str:
-        raise ValueError("package_name must be specified by overriding.")
+    # @staticmethod
+    # def _package_name_undefined_error() -> str:
+    #     raise ValueError("package_name must be specified by overriding.")
     
-    # NOTE: オーバーライド必須
-    package_name = providers.Callable(_package_name_undefined_error)
+    # # NOTE: オーバーライド必須
+    # package_name = providers.Callable(_package_name_undefined_error)
 
     helper = providers.Factory(
         PythonAnalyzerHelper
@@ -59,7 +59,7 @@ class Container(containers.DeclarativeContainer):
     
     module_analyzer = providers.Factory(
         PythonModuleAnalyzer, # TODO: 抽象クラスによるバインドを行いたい。いずれ多言語対応する際に，コード解析器を動的に切り替えられるようにする必要あり。
-        package_name = package_name,
+        # package_name = package_name,
         helper = helper
     )
 

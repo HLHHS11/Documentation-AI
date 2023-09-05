@@ -15,15 +15,15 @@ class PythonAnalyzerHelper(IAnalyzerHelper):
     def parse_symbol_str(self, symbol_str: str) -> PythonSymbolInfo:
         return PythonSymbolInfo.parse(symbol_str)
 
+    def abspath_to_namespace(self, module_abs_path: str, package_root_path: str) -> str:
 
-    def abspath_to_namespace(self, abs_path: str, root_dir: str) -> str:
+        if not os.path.isabs(module_abs_path):
+            raise ValueError(f"filepath: {module_abs_path} is not absolute path.")
+        if not module_abs_path.endswith('.py'):
+            raise ValueError(f"filepath: {module_abs_path} is not python file. (not ends with '.py')")
 
-        if not os.path.isabs(abs_path):
-            raise ValueError(f"filepath: {abs_path} is not absolute path.")
-        if not abs_path.endswith('.py'):
-            raise ValueError(f"filepath: {abs_path} is not python file. (not ends with '.py')")
-
-        namespace_draft = os.path.relpath(abs_path, root_dir)
+        package_parent_dir = os.path.join(package_root_path, "..")      
+        namespace_draft = os.path.relpath(module_abs_path, package_parent_dir)
         namespace_draft = namespace_draft[:-3]
         namespace_draft = namespace_draft.replace(os.sep, '.')
         namespace = namespace_draft

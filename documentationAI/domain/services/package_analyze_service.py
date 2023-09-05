@@ -21,8 +21,12 @@ class PackageAnalyzeService:
         self.helper = helper
     
 
-    def resolve_dependencies(self, package_root_dir: str) -> DependenciesNamedTuple:
-        dependencies_map = self.package_analyzer.generate_dag(package_root_dir)
+    def resolve_dependencies(
+        self,
+        package_root_dir: str,
+        package_name: str
+    ) -> DependenciesNamedTuple:
+        dependencies_map = self.package_analyzer.generate_dag(package_root_dir, package_name)
         resolved = topological_sort(dependencies_map)
         return DependenciesNamedTuple(dependencies_map, resolved)
 

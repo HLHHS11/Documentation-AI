@@ -10,31 +10,29 @@ class DocumentationService:
             package_analyze_service: PackageAnalyzeService,   # NOTE: 抽象クラス`ICodeAnalyzer`を受け取る必要はない
             symbol_documentation_service: SymbolDocumentationService
     ):
-        self.code_analyze_service = package_analyze_service
-        self.symbol_documentation_generator_service = symbol_documentation_service
+        self.package_analyze_service = package_analyze_service
+        self.symbol_documentation_service = symbol_documentation_service
     
 
-    def generate_package_documentation(self, root_dir: str, package_name: str) -> None:
+    def generate_package_documentation(
+        self,
+        project_root_dir: str,
+        package_root_dir: str,
+        package_name: str
+    ) -> None:
 
-        self.create_documentation_directories(root_dir, package_name)
+        # TODO: リポジトリで代替する
+        self.create_documentation_directories(project_root_dir, package_name)
         
-        package_root_dir = os.path.join(root_dir, package_name)
-
-        # dependencies, resolved = self.code_analyze_service.resolve_dependencies(package_root_dir)
-        dependencies_map, resolved = self.code_analyze_service.resolve_dependencies(package_root_dir)
+        # パッケージ解析サービスを利用して，シンボルの依存関係と解決順序を取得
+        dependencies_map, resolved = self.package_analyze_service.resolve_dependencies(package_root_dir, package_name)
         
         # TODO: implement. 解決された順番にしたがってドキュメンテーション生成を行う。
-        # リストresolvedを逆順で処理する
         for symbol_info_str in resolved:
-            # symbol_info_strをPythonSymbolInfoに変換
-            # symbol_info = self.code_analyze_service.parse_symbol_str(symbol_info_str)
-            # print(symbol_info)
-            # symbol_infoに対応するファイルのドキュメンテーションを生成
             # NOTE: symbol_infoのパースは，symbol_documentation_generator_service.generate()内で行うことにする！！！
-            # 依存先の情報
             dependencies = dependencies_map[symbol_info_str]
             # NOTE: 今回は，symbol_info_strにパッケージ名の情報が含まれているので，`rood_dir`の方が`package_root_dir`より適切。
-            self.symbol_documentation_generator_service.generate(root_dir, symbol_info_str, dependencies)
+            self.symbol_documentation_service.generate(project_root_dir, symbol_info_str, dependencies)
     
 
     def create_documentation_directories(self, root_dir: str, package_name: str) -> None:

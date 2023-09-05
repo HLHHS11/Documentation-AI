@@ -1,3 +1,12 @@
 {
-    "python.analysis.typeCheckingMode": "strict"
+    "python.analysis.typeCheckingMode": "strict",
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./documentationAI",
+        "-p",
+        "test_*.py"
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true
 }

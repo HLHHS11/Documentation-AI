@@ -1,9 +1,7 @@
 {
-    // IntelliSense を使用して利用可能な属性を学べます。
-    // 既存の属性の説明をホバーして表示します。
-    // 詳細情報は次を確認してください: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "コード解析ドメインサービスのテスト",
             "type": "python",
@@ -26,17 +24,31 @@
             "justMyCode": true
         },
         {
+            "name": "Python用ヘルパーのテスト",
+            "type": "python",
+            "request": "launch",
+            "module": "documentationAI.test.domain.models.package_analyzer.python_limited.helper",
+            "justMyCode": true
+        },
+        {
             "name": "Pythonコード分析器のテスト",
             "type": "python",
             "request": "launch",
-            "module": "documentationAI.test.domain.models.code_analyzer.python_limited.code_analyzer",
+            "module": "documentationAI.test.domain.models.package_analyzer.python_limited.package_analyzer",
             "justMyCode": true
         },
         {
             "name": "Pythonソース依存関係解析器のテスト",
             "type": "python",
             "request": "launch",
-            "module": "documentationAI.test.domain.models.code_analyzer.python_limited.dependencies_analyzer",
+            "module": "documentationAI.test.domain.models.package_analyzer.python_limited.dependencies_analyzer",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
             "justMyCode": true
         }
     ]

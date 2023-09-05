@@ -18,7 +18,7 @@ from documentationAI.domain.models.package_analyzer.abc import IAnalyzerHelper, 
 from documentationAI.domain.services.package_analyze_service import PackageAnalyzeService
 from documentationAI.domain.models.package_analyzer.abc import IModuleAnalyzer
 # python_symbol_parserにエディタで飛ぶ用のインポート
-from documentationAI.domain.models.package_analyzer.python_limited.module_analyzer import python_symbol_parser
+# from documentationAI.domain.models.package_analyzer.python_limited.module_analyzer import python_symbol_parser
 
 
 
@@ -48,7 +48,12 @@ class SymbolDocumentationService:
     
 
 # NOTE: パッケージ名は，symbol_info_strに含まれているので，引数は`package_root_dir`より`root_dir`が適切
-    def generate(self, root_dir: str, symbol_info_str: str, dependencies: list[str]) -> None:
+    def generate(
+        self,
+        root_dir: str,
+        symbol_info_str: str,
+        dependencies: list[str]
+    ) -> None:
 
         # file_path = self._get_file_path(symbol_info_str, root_dir)
         symbol_info = self.helper.parse_symbol_str(symbol_info_str)

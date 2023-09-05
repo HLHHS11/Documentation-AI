@@ -9,15 +9,21 @@ from documentationAI.domain.models.package_analyzer.python_limited.module_analyz
 class PythonPackageAnalyzer(IPackageAnalyzer):
 
     def __init__(
-            self,
-            module_analyzer: PythonModuleAnalyzer,
-            helper: IAnalyzerHelper
+        self,
+        module_analyzer: PythonModuleAnalyzer,
+        helper: IAnalyzerHelper
     ):
-        super().__init__(module_analyzer, helper)
+        # super().__init__(module_analyzer, helper)
+        self.module_analyzer = module_analyzer
+        self.helper = helper
     
 
     # PythonDependenciesAnalyzerを使って，root_dir以下のファイルを解析し，依存関係を取得
-    def generate_dag(self, package_root_dir: str) -> Dict[str, list[str]]:
+    def generate_dag(
+        self,
+        package_root_dir: str,
+        package_name: str
+    ) -> Dict[str, list[str]]:
 
         # NOTE: pylanceの型チェック`ISymbolInfo`と`PythonSymbolInfo`の問題で，`ISymbolInfo`を選択した
         overall_dependencies: Dict[str, Dict[str, list[PythonSymbolInfo]]] = {}
@@ -25,8 +31,8 @@ class PythonPackageAnalyzer(IPackageAnalyzer):
         for dirpath, _, filenames in os.walk(package_root_dir):
             for filename in filenames:
                 if filename.endswith('.py'):
-                    file_path = os.path.join(dirpath, filename)
-                    namespace, symbols_dependencies = self.dependencies_analyzer.analyze(file_path)
+                    module_path = os.path.join(dirpath, filename)
+                    namespace, symbols_dependencies = self.module_analyzer.analyze(module_path, package_root_dir, package_name)
                     # NOTE: `ISymbolInfo`と`PythonSymbolInfo`の問題で，`type: ignore`している。
                     overall_dependencies[namespace] = symbols_dependencies  # type: ignore
         

@@ -1,5 +1,4 @@
 import ast
-import os
 from typing import Dict, Tuple
 
 from documentationAI.domain.models.package_analyzer.abc import IModuleAnalyzer
@@ -7,42 +6,21 @@ from documentationAI.domain.models.package_analyzer.python_limited.helper import
 from documentationAI.domain.models.package_analyzer.python_limited.symbol_info import PythonSymbolInfo
 
 
-def python_symbol_parser(args: list[str], mode: str) -> PythonSymbolInfo|str:
-    """_summary_
-    `GetSymbolInfo`モード: 引数の文字列を`PythonSymbolInfo`に変換して返します。`args[0] = symbol_str = <namespace>:<symbol_name>`の形式  
-    `GetFilePath`モード: 引数の文字列からファイルパスを取得して返します。`args[0] = symbol_str = <namespace>:<symbol_name>, args[1] = <root_dir_path>`の形式
-    Args:
-        args (list[str]): 引数の文字列のリスト
-        mode (str): モードを指定する文字列
-
-    Returns:
-        PythonSymbolInfo|str: _description_
-    """    
-    if mode == "GetSymbolInfo":
-        symbol_str = args[0]
-        return PythonSymbolInfo.parse(symbol_str)
-    elif mode == "GetFilePath":
-        symbol_str = args[0]
-        root_dir_path = args[1]
-        namespace, _ = symbol_str.split(':')
-        return os.path.join(root_dir_path, namespace.replace('.', os.sep) + '.py')
-    else:
-        raise ValueError(f"Invalid mode: {mode}")
-        
-
-
 class PythonModuleAnalyzer(IModuleAnalyzer):
 
-    def __init__(self, package_name: str, helper: PythonAnalyzerHelper):
-        self.package_name: str = package_name
-        # self.parser: Callable[[list[str], str], PythonSymbolInfo|str] = parser    
+    def __init__(self, helper: PythonAnalyzerHelper):
+        # self.package_name: str = package_name
         self.helper = helper
 
 
     # NOTE: Pylanceは`PythonSymbolInfo`と書いたらダメで`ISymbolInfo`と言ってくるので，`type: ignore`している。
-    def analyze(self, file_path: str) -> Tuple[str, Dict[str, list[PythonSymbolInfo]]]:   # type: ignore
+    def analyze(self,   # type: ignore
+        module_path: str,
+        package_root_dir: str,
+        package_name: str 
+    ) -> Tuple[str, Dict[str, list[PythonSymbolInfo]]]:
 
-        with open(file_path, 'r') as file:
+        with open(module_path, 'r') as file:
             tree = ast.parse(file.read())
         
         # 対象ファイル内のインポート文を解析する
@@ -54,12 +32,12 @@ class PythonModuleAnalyzer(IModuleAnalyzer):
         for node in import_nodes:
             if isinstance(node, ast.Import):
                 for alias in node.names:
-                    if alias.name.startswith(self.package_name):
+                    if alias.name.startswith(package_name):
                         target_import_nodes.append(node)
                         break
             # elif isinstance(node, ast.ImportFrom):    # ast.Import|ast.ImportFromに対してast.Importではないので，確実にast.ImportFrom
             else:
-                if node.module.startswith(self.package_name) if node.module else False:
+                if node.module.startswith(package_name) if node.module else False:
                     target_import_nodes.append(node)
 
         # 解析中のファイル内の，外部からインポートされうるシンボルを解析し，名前を取得
@@ -71,7 +49,7 @@ class PythonModuleAnalyzer(IModuleAnalyzer):
 
         # 扱ったファイルのネームスペースと，symbols_dependenciesをタプルで返す
         # 扱ったファイルのパスを，self.package_name起点のネームスペースに変換 (self.package)
-        namespace = self.helper.abspath_to_namespace(file_path, self.package_name)
+        namespace = self.helper.abspath_to_namespace(module_path, package_root_dir)
 
         return (namespace, symbols_dependencies)
 

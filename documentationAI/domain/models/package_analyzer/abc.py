@@ -34,7 +34,7 @@ class IAnalyzerHelper(abc.ABC):
 
 
     @abc.abstractmethod
-    def abspath_to_namespace(self, abs_path: str, root_dir: str) -> str:    
+    def abspath_to_namespace(self, module_abs_path: str, package_root_path: str) -> str:    
         pass
 
     @abc.abstractmethod
@@ -51,7 +51,7 @@ class IModuleAnalyzer(abc.ABC):
         self.helper = helper
 
     @abc.abstractmethod
-    def analyze(self, file_path: str) -> Tuple[str, Dict[str, list[ISymbolInfo]]]:
+    def analyze(self, module_path: str, package_root_dir: str, package_name: str) -> Tuple[str, Dict[str, list[ISymbolInfo]]]:
         pass
 
     @abc.abstractmethod
@@ -65,14 +65,6 @@ class IModuleAnalyzer(abc.ABC):
 
 class IPackageAnalyzer(abc.ABC):
 
-    def __init__(
-        self,
-        dependencies_analyzer: IModuleAnalyzer,
-        helper: IAnalyzerHelper
-    ):
-        self.dependencies_analyzer = dependencies_analyzer
-        self.helper = helper
-
     @abc.abstractmethod
-    def generate_dag(self, package_root_dir: str) -> Dict[str, list[str]]:
+    def generate_dag(self, package_root_dir: str, package_name: str) -> Dict[str, list[str]]:
         pass
