@@ -12,19 +12,6 @@ from documentationAI.domain.models.package_analyzer.python_limited.helper import
 
 
 class Container(containers.DeclarativeContainer):
-    """_summary_
-    [重要]: `package_name`の指定（オーバーライド）を行わずに，`package_name`に依存するオブジェクトを呼び出すとエラーが発生します。
-    必ず呼出側で`package_name`をオーバーライドしてください。例:
-    ``` python
-        container.package_name.override("my_package")
-        analyzer = container.python_dependencies_analyzer()
-    ```
-    Args:
-        containers (_type_): _description_
-
-    Raises:
-        ValueError: _description_
-    """    
 
     # TODO: 現状，configは必要ないのだが…
     config = providers.Configuration()
@@ -41,25 +28,12 @@ class Container(containers.DeclarativeContainer):
         router = router
     )
 
-    # PythonDependenciesAnalyerのコンストラクタ引数package_nameは，動的に指定される
-    # コンテナの呼出側で，以下のようにpackage_nameをオーバーライドすることで得られる。
-    # container.package_name.override("my_package")
-    # analyzer = container.python_dependencies_analyzer()
-
-    # @staticmethod
-    # def _package_name_undefined_error() -> str:
-    #     raise ValueError("package_name must be specified by overriding.")
-    
-    # # NOTE: オーバーライド必須
-    # package_name = providers.Callable(_package_name_undefined_error)
-
     helper = providers.Factory(
         PythonAnalyzerHelper
     )
     
     module_analyzer = providers.Factory(
         PythonModuleAnalyzer, # TODO: 抽象クラスによるバインドを行いたい。いずれ多言語対応する際に，コード解析器を動的に切り替えられるようにする必要あり。
-        # package_name = package_name,
         helper = helper
     )
 

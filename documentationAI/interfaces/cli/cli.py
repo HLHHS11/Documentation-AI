@@ -1,5 +1,3 @@
-# from typing import Callable
-
 from documentationAI.interfaces.cli.router import Router
 
 

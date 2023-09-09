@@ -27,18 +27,14 @@ def documentation(params: list[str]) -> None:
             print("[Error]: The specified directory does not exist. Please try again. (Hint: use absolute path)")
             continue
         package_root_dir = input("Enter the absolute dilectory path to the package to generate documentation for:\n\t")   # TODO: 相対パスによる記述等にも対応すること！(documentation_generator_service等の改修も必要になるだろう。)
-        package_name = input("Enter the python package name:\n\t") # TODO: Pythonパッケージ専用の記述になってしまっているので注意！
         if not os.path.exists(package_root_dir):
             print("[Error]: The specified package directory does not exist. Please try again.")
             continue
-        if not os.path.exists(os.path.join(project_root_dir, package_name)):
-            print("[Error]: The specified package directory does not exist. Please try again.")  # TODO: ルートディレクトリ直下にパッケージが存在することを前提としているので，改修すること！
-            continue
+        package_name = input("Enter the python package name:\n\t") # TODO: Pythonパッケージ専用の記述になってしまっているので注意！
         
         # NOTE: トップレベルでインポートすると循環参照になるので，関数内で遅延インポートする。
         from documentationAI.container import container
-        # container.package_name.override(package_name)   # type: ignore
-        documentation_generator_service = container.documentation_generator_service()
+        documentation_generator_service = container.documentation_service()
         documentation_generator_service.generate_package_documentation(project_root_dir, package_root_dir, package_name)
         break
     
