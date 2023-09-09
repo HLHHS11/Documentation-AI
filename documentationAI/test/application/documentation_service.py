@@ -2,7 +2,7 @@ from documentationAI.container import container
 from documentationAI.application.documentation_service import DocumentationService
 
 
-def documentation_generator_service_test():
+def documentation_service_test():
     container.package_name.override("documentationAI")  # type: ignore
     application_service: DocumentationService = container.documentation_service()
     root_dir = "/home/yama/Documents/Programming/documentation-AI"
@@ -11,4 +11,4 @@ def documentation_generator_service_test():
     application_service.generate_package_documentation(root_dir, package_root_dir, package_name)
 
 
-documentation_generator_service_test()
+documentation_service_test()
