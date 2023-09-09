@@ -82,7 +82,7 @@ class Container(containers.DeclarativeContainer):
         helper = helper
     )
 
-    documentation_generator_service = providers.Singleton(
+    documentation_service = providers.Singleton(
         DocumentationService,
         package_analyze_service = package_analyze_service,
         symbol_documentation_service = symbol_documentation_service
