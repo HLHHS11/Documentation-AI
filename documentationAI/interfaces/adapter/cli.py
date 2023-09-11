@@ -1,4 +1,4 @@
-from documentationAI.interfaces.cli.router import Router
+from documentationAI.interfaces.adapter.router import Router
 
 
 class CLI:
