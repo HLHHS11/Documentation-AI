@@ -6,3 +6,17 @@ class SymbolDocumentationGenerator:
 
     def __init__(self):
         pass
+
+    # TODO: 引数で受け取るべき情報を検討する
+    def set_context(
+        self,
+        symbol_name: str,   # NOTE: 指定が必須
+        symbol_definition: str, # NOTE: 指定が必須
+        dependency_docs: dict[str, str] = {}
+        
+    ) -> None:
+        # TODO: implement
+    
+
+    def generate(self) -> str:
+        # TODO: implement
