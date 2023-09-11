@@ -54,27 +54,29 @@ class DocumentationService:
 
 
 if __name__ == "__main__":
-    from documentationAI.domain.models.package_analyzer.python_limited.package_analyzer import PythonPackageAnalyzer
-    from documentationAI.domain.models.package_analyzer.python_limited.module_analyzer import PythonModuleAnalyzer
-    from documentationAI.domain.models.package_analyzer.python_limited.helper import PythonAnalyzerHelper
-    from documentationAI.domain.services.symbol_documentation_service import SymbolDocumentationService
-    
 
-    helper = PythonAnalyzerHelper()
-    module_analyzer = PythonModuleAnalyzer(helper)
-    package_analyzer = PythonPackageAnalyzer(module_analyzer, helper)
-    package_analyze_service = PackageAnalyzeService(package_analyzer, helper)
-    symbol_documentation_service = SymbolDocumentationService(
-        module_analyzer,
-        helper
-    )
-    documentation_service = DocumentationService(
-        package_analyze_service,
-        symbol_documentation_service
-    )
+    def debug():
+        from documentationAI.domain.models.package_analyzer.python_limited.package_analyzer import PythonPackageAnalyzer
+        from documentationAI.domain.models.package_analyzer.python_limited.module_analyzer import PythonModuleAnalyzer
+        from documentationAI.domain.models.package_analyzer.python_limited.helper import PythonAnalyzerHelper
+        from documentationAI.domain.services.symbol_documentation_service import SymbolDocumentationService
+        helper = PythonAnalyzerHelper()
+        module_analyzer = PythonModuleAnalyzer(helper)
+        package_analyzer = PythonPackageAnalyzer(module_analyzer, helper)
+        package_analyze_service = PackageAnalyzeService(package_analyzer, helper)
+        symbol_documentation_service = SymbolDocumentationService(
+            module_analyzer,
+            helper
+        )
+        documentation_service = DocumentationService(
+            package_analyze_service,
+            symbol_documentation_service
+        )
 
-    project_root_dir = os.path.join(os.path.dirname(__file__), "..", "..")
-    package_root_dir = os.path.join(project_root_dir, "documentationAI")
-    package_name = "documentationAI"
+        project_root_dir = os.path.join(os.path.dirname(__file__), "..", "..")
+        package_root_dir = os.path.join(project_root_dir, "documentationAI")
+        package_name = "documentationAI"
 
-    documentation_service.generate_package_documentation(project_root_dir, package_root_dir, package_name)
+        documentation_service.generate_package_documentation(project_root_dir, package_root_dir, package_name)
+
+    debug()
