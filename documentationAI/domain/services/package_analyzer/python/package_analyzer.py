@@ -1,9 +1,9 @@
 from typing import Dict
 import os
 
-from documentationAI.domain.models.package_analyzer.abc import IAnalyzerHelper, IPackageAnalyzer
-from documentationAI.domain.models.package_analyzer.python_limited.symbol_info import PythonSymbolInfo
-from documentationAI.domain.models.package_analyzer.python_limited.module_analyzer import PythonModuleAnalyzer
+from documentationAI.domain.services.package_analyzer.abc import IAnalyzerHelper, IPackageAnalyzer
+from documentationAI.domain.services.package_analyzer.python.symbol_info import PythonSymbolInfo
+from documentationAI.domain.services.package_analyzer.python.module_analyzer import PythonModuleAnalyzer
 
 
 class PythonPackageAnalyzer(IPackageAnalyzer):

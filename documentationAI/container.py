@@ -1,14 +1,14 @@
 from dependency_injector import containers, providers
 
-from documentationAI.interfaces.cli.cli import CLI
-from documentationAI.interfaces.cli.router import Router
-from documentationAI.interfaces.cli.handlers import routes
-from documentationAI.domain.models.package_analyzer.python_limited.module_analyzer import PythonModuleAnalyzer
-from documentationAI.domain.models.package_analyzer.python_limited.package_analyzer import PythonPackageAnalyzer
+from documentationAI.interfaces.adapter.cli import CLI
+from documentationAI.interfaces.adapter.router import Router
+from documentationAI.interfaces.adapter.handlers import routes
+from documentationAI.domain.services.package_analyzer.python.module_analyzer import PythonModuleAnalyzer
+from documentationAI.domain.services.package_analyzer.python.package_analyzer import PythonPackageAnalyzer
 from documentationAI.application.documentation_service import DocumentationService
 from documentationAI.domain.services.package_analyze_service import PackageAnalyzeService
 from documentationAI.domain.services.symbol_documentation_service import SymbolDocumentationService
-from documentationAI.domain.models.package_analyzer.python_limited.helper import PythonAnalyzerHelper
+from documentationAI.domain.services.package_analyzer.python.helper import PythonAnalyzerHelper
 
 
 class Container(containers.DeclarativeContainer):

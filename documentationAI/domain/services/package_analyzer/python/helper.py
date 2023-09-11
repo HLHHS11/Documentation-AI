@@ -2,8 +2,8 @@
 import os
 # from importlib import util
 
-from documentationAI.domain.models.package_analyzer.abc import IAnalyzerHelper
-from documentationAI.domain.models.package_analyzer.python_limited.symbol_info import PythonSymbolInfo
+from documentationAI.domain.services.package_analyzer.abc import IAnalyzerHelper
+from documentationAI.domain.services.package_analyzer.python.symbol_info import PythonSymbolInfo
 
 
 class PythonAnalyzerHelper(IAnalyzerHelper):

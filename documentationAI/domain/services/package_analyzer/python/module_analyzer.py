@@ -1,9 +1,9 @@
 import ast
 from typing import Dict, Tuple
 
-from documentationAI.domain.models.package_analyzer.abc import IModuleAnalyzer
-from documentationAI.domain.models.package_analyzer.python_limited.helper import PythonAnalyzerHelper
-from documentationAI.domain.models.package_analyzer.python_limited.symbol_info import PythonSymbolInfo
+from documentationAI.domain.services.package_analyzer.abc import IModuleAnalyzer
+from documentationAI.domain.services.package_analyzer.python.helper import PythonAnalyzerHelper
+from documentationAI.domain.services.package_analyzer.python.symbol_info import PythonSymbolInfo
 
 
 class PythonModuleAnalyzer(IModuleAnalyzer):
