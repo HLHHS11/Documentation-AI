@@ -14,13 +14,8 @@ from langchain.schema import (
 )
 
 
-from documentationAI.domain.models.package_analyzer.abc import IAnalyzerHelper, ISymbolInfo
-from documentationAI.domain.services.package_analyze_service import PackageAnalyzeService
+from documentationAI.domain.models.package_analyzer.abc import IAnalyzerHelper
 from documentationAI.domain.models.package_analyzer.abc import IModuleAnalyzer
-# python_symbol_parserにエディタで飛ぶ用のインポート
-# from documentationAI.domain.models.package_analyzer.python_limited.module_analyzer import python_symbol_parser
-
-
 
 from dotenv import load_dotenv
 from documentationAI.settings import dotenv_path
@@ -39,8 +34,6 @@ class SymbolDocumentationService:
     ):
         self.module_analyzer = module_analyzer
         self.helper = helper
-        # self.documentation_generator = documentation_generator
-        # self.documentation_repository = documentation_repository
     
 
 # NOTE: パッケージ名は，symbol_info_strに含まれているので，引数は`package_root_dir`より`root_dir`が適切
