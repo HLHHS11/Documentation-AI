@@ -34,13 +34,9 @@ class SymbolDocumentationService:
     
     def __init__(
             self,
-            package_analyze_service: PackageAnalyzeService,
             module_analyzer: IModuleAnalyzer,
             helper: IAnalyzerHelper,
-            # documentation_generator: DocumentationGenerator,
-            # documentation_repository: DocumentationRepository
     ):
-        self.package_analyze_service = package_analyze_service
         self.module_analyzer = module_analyzer
         self.helper = helper
         # self.documentation_generator = documentation_generator

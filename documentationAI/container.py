@@ -51,7 +51,6 @@ class Container(containers.DeclarativeContainer):
 
     symbol_documentation_service = providers.Factory(
         SymbolDocumentationService,
-        package_analyze_service = package_analyze_service,
         module_analyzer = module_analyzer,
         helper = helper
     )
