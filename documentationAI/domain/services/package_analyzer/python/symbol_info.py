@@ -1,4 +1,4 @@
-from documentationAI.domain.services.package_analyzer.abc import ISymbolInfo
+from documentationAI.domain.models.document.symbol_info import ISymbolInfo
 
 
 class PythonSymbolInfo(ISymbolInfo):
