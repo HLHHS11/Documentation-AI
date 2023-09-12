@@ -1,7 +1,7 @@
-from documentationAI.domain.models.document.symbol_info import ISymbolInfo
+from documentationAI.domain.models.symbol import ISymbolId
 
 
-class PythonSymbolInfo(ISymbolInfo):
+class PythonSymbolId(ISymbolId):
 
     def __init__(self, namespace: str, symbol_name: str):
         self.namespace: str = namespace
@@ -12,12 +12,12 @@ class PythonSymbolInfo(ISymbolInfo):
         return f"{self.namespace}:{self.symbol_name}"
     
     @classmethod
-    def parse(cls, stringified: str) -> 'PythonSymbolInfo':
+    def parse(cls, stringified: str) -> 'PythonSymbolId':
         namespace, symbol_name = stringified.split(':')
         return cls(namespace, symbol_name)
 
     def __eq__(self, other: object) -> bool:
-        if isinstance(other, PythonSymbolInfo):
+        if isinstance(other, PythonSymbolId):
             return self.namespace == other.namespace and self.symbol_name == other.symbol_name
         else:
             return False

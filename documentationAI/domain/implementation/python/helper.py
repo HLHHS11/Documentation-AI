@@ -2,8 +2,8 @@
 import os
 # from importlib import util
 
-from documentationAI.domain.services.package_analyzer.abc import IAnalyzerHelper
-from documentationAI.domain.services.package_analyzer.python.symbol_info import PythonSymbolInfo
+from documentationAI.domain.services.analyzer import IAnalyzerHelper
+from documentationAI.domain.implementation.python.symbol import PythonSymbolId
 
 
 class PythonAnalyzerHelper(IAnalyzerHelper):
@@ -12,8 +12,8 @@ class PythonAnalyzerHelper(IAnalyzerHelper):
         pass
 
 
-    def parse_symbol_str(self, symbol_str: str) -> PythonSymbolInfo:
-        return PythonSymbolInfo.parse(symbol_str)
+    def parse_symbol_id_str(self, symbol_id_str: str) -> PythonSymbolId:
+        return PythonSymbolId.parse(symbol_id_str)
 
     def abspath_to_namespace(self, module_abs_path: str, package_root_path: str) -> str:
 

@@ -1,12 +1,13 @@
 import abc
 from typing import Dict, Tuple
 
-from documentationAI.domain.models.document.symbol_info import ISymbolInfo
+from documentationAI.domain.models.symbol import ISymbolId
+
 
 class IAnalyzerHelper(abc.ABC):
 
     @abc.abstractmethod
-    def parse_symbol_str(self, symbol_str: str) -> ISymbolInfo:
+    def parse_symbol_id_str(self, symbol_id_str: str) -> ISymbolId:
         pass
 
 
@@ -28,7 +29,7 @@ class IModuleAnalyzer(abc.ABC):
         self.helper = helper
 
     @abc.abstractmethod
-    def analyze(self, module_path: str, package_root_dir: str, package_name: str) -> Tuple[str, Dict[str, list[ISymbolInfo]]]:
+    def analyze(self, module_path: str, package_root_dir: str, package_name: str) -> Tuple[str, Dict[str, list[ISymbolId]]]:
         pass
 
     @abc.abstractmethod

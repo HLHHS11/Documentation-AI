@@ -1,7 +1,7 @@
 import abc
 
 
-class ISymbolInfo(abc.ABC):
+class ISymbolId(abc.ABC):
 
     def __init__(self, namespace: str, symbol_name: str):
         self.namespace: str = namespace
@@ -13,7 +13,7 @@ class ISymbolInfo(abc.ABC):
     
     @classmethod
     @abc.abstractmethod
-    def parse(cls, stringified: str) -> 'ISymbolInfo':
+    def parse(cls, stringified: str) -> 'ISymbolId':
         pass
 
     @abc.abstractmethod
@@ -23,3 +23,17 @@ class ISymbolInfo(abc.ABC):
     @abc.abstractmethod
     def __str__(self) -> str:
         pass
+
+
+class ISymbol(abc.ABC):
+
+    def __init__(
+        self,
+        id: ISymbolId,
+        definition: str,
+        dependencies: list[ISymbolId]
+    ):
+        self.id = id
+        self.definition = definition
+        self.dependencies = dependencies
+    
