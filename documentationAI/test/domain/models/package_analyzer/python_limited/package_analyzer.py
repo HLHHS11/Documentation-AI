@@ -1,7 +1,7 @@
-from documentationAI.domain.models.package_analyzer.python_limited.module_analyzer import PythonModuleAnalyzer
-from documentationAI.domain.models.package_analyzer.python_limited.package_analyzer import PythonPackageAnalyzer
+from documentationAI.domain.services.package_analyzer.python.module_analyzer import PythonModuleAnalyzer
+from documentationAI.domain.services.package_analyzer.python.package_analyzer import PythonPackageAnalyzer
 # import helper class for python
-from documentationAI.domain.models.package_analyzer.python_limited.helper import PythonAnalyzerHelper
+from documentationAI.domain.services.package_analyzer.python.helper import PythonAnalyzerHelper
 
 def test_python_package_analyzer():
     # NOTE: 以下のfilepathは，テスト実行環境に応じて変更する必要があります。本来はコード自体を環境に依存しないようにする必要がありますが…
