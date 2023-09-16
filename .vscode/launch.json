@@ -1,7 +1,13 @@
 {
     "version": "0.2.0",
     "configurations": [
-
+        {
+            "name": "DocumentationServiceデバッグ",
+            "type": "python",
+            "request": "launch",
+            "module": "documentationAI.application.documentation_service",
+            "justMyCode": true
+        },
         {
             "name": "コード解析ドメインサービスのテスト",
             "type": "python",

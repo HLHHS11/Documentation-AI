@@ -1,9 +1,9 @@
 import ast
 from typing import Dict, Tuple
 
-from documentationAI.domain.models.package_analyzer.abc import IModuleAnalyzer
-from documentationAI.domain.models.package_analyzer.python_limited.helper import PythonAnalyzerHelper
-from documentationAI.domain.models.package_analyzer.python_limited.symbol_info import PythonSymbolInfo
+from documentationAI.domain.services.analyzer import IModuleAnalyzer
+from documentationAI.domain.implementation.python.helper import PythonAnalyzerHelper
+from documentationAI.domain.implementation.python.symbol import PythonSymbolId
 
 
 class PythonModuleAnalyzer(IModuleAnalyzer):
@@ -18,7 +18,7 @@ class PythonModuleAnalyzer(IModuleAnalyzer):
         module_path: str,
         package_root_dir: str,
         package_name: str 
-    ) -> Tuple[str, Dict[str, list[PythonSymbolInfo]]]:
+    ) -> Tuple[str, Dict[str, list[PythonSymbolId]]]:
 
         with open(module_path, 'r') as file:
             tree = ast.parse(file.read())
@@ -54,41 +54,6 @@ class PythonModuleAnalyzer(IModuleAnalyzer):
         return (namespace, symbols_dependencies)
 
 
-    def parse_symbol_str(self, symbol_str: str) -> PythonSymbolInfo:
-        return self.helper.parse_symbol_str(symbol_str)
-    
-
-    # HACK: 本来はこのクラスの責務ではないかも？？
-    # TODO: クラスおよびメソッド・メンバ変数の扱い方を検討する必要がある。
-    def get_symbol_impl(self, file_path: str, symbol_name: str) -> str:
-        with open(file_path, 'r') as file:
-            tree = ast.parse(file.read())
-        # シンボルネームに対応するソース定義を取得。ただし，関数定義やクラス定義の場合は，関数定義やクラス定義の行全体を取得する。
-        # クラス定義の場合は，symbol_nameが<クラス名>.<メソッド・メンバ名>の形式になっていることに注意
-        # class_def_nodes: set[ast.ClassDef] = set()
-        for node in ast.walk(tree):
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                # if isinstance(node, ast.ClassDef):
-                #     class_def_nodes.add(node)
-                if node.name == symbol_name.split('.')[-1]:
-                    return ast.unparse(node)
-            elif isinstance(node, (ast.AnnAssign, ast.AugAssign)):
-                # TODO: pylance警告が出ている
-                if node.target.id == symbol_name.split('.')[-1]:    # type: ignore   
-                    return ast.unparse(node)
-            elif isinstance(node, ast.Assign):
-                # TODO: pylance警告が出ている
-                if node.targets[0].id == symbol_name.split('.')[-1]:    # type:ignore
-                    return ast.unparse(node)
-        
-        return ""
-
-
-    def get_module_impl(self, file_path: str) -> str:
-        with open(file_path, 'r') as file:  # NOTE: try-exceptは呼出側で行えばよさそう
-            return file.read()
-
-
     def _collect_imports(self, tree: ast.AST) -> list[ast.Import|ast.ImportFrom]:
         import_statements: list[ast.Import|ast.ImportFrom] = []
         for node in ast.walk(tree):
@@ -122,9 +87,9 @@ class PythonModuleAnalyzer(IModuleAnalyzer):
         return top_level_symbol_nodes
 
 
-    def _analyze_dependencies(self, top_level_symbol_nodes: list[ast.AST], import_nodes: list[ast.Import|ast.ImportFrom]) -> Dict[str, list[PythonSymbolInfo]]:
+    def _analyze_dependencies(self, top_level_symbol_nodes: list[ast.AST], import_nodes: list[ast.Import|ast.ImportFrom]) -> Dict[str, list[PythonSymbolId]]:
 
-        symbols_dependencies: Dict[str, list[PythonSymbolInfo]] = {}
+        symbols_dependencies: Dict[str, list[PythonSymbolId]] = {}
 
         import_symbols: list[Tuple[str, str, bool]] = []    # (namespace, symbol_name, is_import)
 
@@ -174,12 +139,12 @@ class PythonModuleAnalyzer(IModuleAnalyzer):
                 symbol_name = None
 
             if symbol_name:
-                symbol_infos: list[PythonSymbolInfo] = []
+                symbol_infos: list[PythonSymbolId] = []
                 for child in ast.walk(node):
                     if isinstance(child, ast.Name):
                         for namespace, import_symbol, is_import in import_symbols:
                             if child.id == import_symbol:
-                                dependency = PythonSymbolInfo(namespace, import_symbol if not is_import else "*")
+                                dependency = PythonSymbolId(namespace, import_symbol if not is_import else "*")
                                 # HACK: 同一の名前は重複させないようにしたい。
                                 if dependency not in symbol_infos:  # inは==による比較と等価であるらしい。そして，値オブジェクトとしての比較には__eq__()が使える。
                                     symbol_infos.append(dependency)

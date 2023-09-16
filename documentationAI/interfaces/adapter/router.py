@@ -1,11 +1,8 @@
 from typing import Callable, Dict
 
-# from documentationAI.interfaces.handlers import Handlers
-
 
 class Router:
     def __init__(self, routes: Dict[str, Callable[[list[str]], None]]):
-        # self.routes: Dict[str, Callable[[list[str]], None]] = {}
         self.routes = routes
 
     def register(self, request: str, callback: Callable[[list[str]], None]) -> None:
@@ -17,5 +14,3 @@ class Router:
             handler(params)
         else:
             print("Invalid command. Type 'help' for available commands.")
-
-
