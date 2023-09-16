@@ -16,7 +16,11 @@ class IAnalyzerHelper(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def namespace_to_abspath(self, namespace: str, root_dir: str) -> str:
+    def namespace_to_abspath(self, namespace: str, package_root_dir: str) -> str:
+        pass
+
+    @abc.abstractmethod
+    def get_symbol_def(self, symbol_id: ISymbolId, package_root_dir: str) -> str:
         pass
 
 
@@ -30,14 +34,6 @@ class IModuleAnalyzer(abc.ABC):
 
     @abc.abstractmethod
     def analyze(self, module_path: str, package_root_dir: str, package_name: str) -> Tuple[str, Dict[str, list[ISymbolId]]]:
-        pass
-
-    @abc.abstractmethod
-    def get_symbol_impl(self, file_path: str, symbol_name: str) -> str:
-        pass
-
-    @abc.abstractmethod
-    def get_module_impl(self, file_path: str) -> str:
         pass
 
 

@@ -1,14 +1,15 @@
 from dependency_injector import containers, providers
+from documentationAI.domain.services.prompt_generator.documentation import DocumentationPromptGenerator
 
 from documentationAI.interfaces.adapter.cli import CLI
 from documentationAI.interfaces.adapter.router import Router
 from documentationAI.interfaces.adapter.handlers import routes
-from documentationAI.domain.services.package_analyzer.python.module_analyzer import PythonModuleAnalyzer
-from documentationAI.domain.services.package_analyzer.python.package_analyzer import PythonPackageAnalyzer
+from documentationAI.domain.implementation.python.module_analyzer import PythonModuleAnalyzer
+from documentationAI.domain.implementation.python.package_analyzer import PythonPackageAnalyzer
 from documentationAI.application.documentation_service import DocumentationService
-from documentationAI.domain.services.package_analyze_service import PackageAnalyzeService
-from documentationAI.domain.services.symbol_documentation_service import SymbolDocumentationService
-from documentationAI.domain.services.package_analyzer.python.helper import PythonAnalyzerHelper
+from documentationAI.domain.implementation.python.helper import PythonAnalyzerHelper
+from documentationAI.interfaces.repository.document_repository_impl.in_memory import InMemoryDocumentRepositoryImpl
+from documentationAI.interfaces.repository.document_repository_impl.sqlite import SQLiteDocumentRepositoryImpl
 
 
 class Container(containers.DeclarativeContainer):
@@ -42,23 +43,26 @@ class Container(containers.DeclarativeContainer):
         module_analyzer = module_analyzer,
         helper = helper
     )
-    
-    package_analyze_service = providers.Factory(
-        PackageAnalyzeService,
-        package_analyzer = package_analyzer,
-        helper = helper
+
+    # document_repository = providers.Singleton(
+    #     SQLiteDocumentRepositoryImpl,
+    #     sqlite_db_path = config.sqlite.db_path
+    # )
+
+    document_repository = providers.Singleton(
+        InMemoryDocumentRepositoryImpl,
     )
 
-    symbol_documentation_service = providers.Factory(
-        SymbolDocumentationService,
-        module_analyzer = module_analyzer,
-        helper = helper
+    prompt_generator = providers.Factory(
+        DocumentationPromptGenerator,
     )
 
     documentation_service = providers.Singleton(
         DocumentationService,
-        package_analyze_service = package_analyze_service,
-        symbol_documentation_service = symbol_documentation_service
+        package_analyzer = package_analyzer,
+        document_repository = document_repository,
+        helper = helper,
+        prompt_generator = prompt_generator
     )
 
 

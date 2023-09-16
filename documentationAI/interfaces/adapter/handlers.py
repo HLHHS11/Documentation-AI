@@ -34,6 +34,16 @@ def documentation(params: list[str]) -> None:
         
         # NOTE: トップレベルでインポートすると循環参照になるので，関数内で遅延インポートする。
         from documentationAI.container import container
+        container.config.from_dict({    # TODO: ここでifもつけずに設定するのはかなり強引。後で修正すること。
+            "local_directory": {
+                "project_root_dir": project_root_dir,
+                "package_root_dir": package_root_dir,
+                "package_name": package_name
+            },
+            "sqlite": {
+                "db_path": os.path.join(project_root_dir, "docai_db.sqlite")
+            }
+        })
         documentation_generator_service = container.documentation_service()
         documentation_generator_service.generate_package_documentation(project_root_dir, package_root_dir, package_name)
         break

@@ -54,41 +54,6 @@ class PythonModuleAnalyzer(IModuleAnalyzer):
         return (namespace, symbols_dependencies)
 
 
-    def parse_symbol_str(self, symbol_str: str) -> PythonSymbolId:
-        return self.helper.parse_symbol_id_str(symbol_str)
-    
-
-    # HACK: 本来はこのクラスの責務ではないかも？？
-    # TODO: クラスおよびメソッド・メンバ変数の扱い方を検討する必要がある。
-    def get_symbol_impl(self, file_path: str, symbol_name: str) -> str:
-        with open(file_path, 'r') as file:
-            tree = ast.parse(file.read())
-        # シンボルネームに対応するソース定義を取得。ただし，関数定義やクラス定義の場合は，関数定義やクラス定義の行全体を取得する。
-        # クラス定義の場合は，symbol_nameが<クラス名>.<メソッド・メンバ名>の形式になっていることに注意
-        # class_def_nodes: set[ast.ClassDef] = set()
-        for node in ast.walk(tree):
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                # if isinstance(node, ast.ClassDef):
-                #     class_def_nodes.add(node)
-                if node.name == symbol_name.split('.')[-1]:
-                    return ast.unparse(node)
-            elif isinstance(node, (ast.AnnAssign, ast.AugAssign)):
-                # TODO: pylance警告が出ている
-                if node.target.id == symbol_name.split('.')[-1]:    # type: ignore   
-                    return ast.unparse(node)
-            elif isinstance(node, ast.Assign):
-                # TODO: pylance警告が出ている
-                if node.targets[0].id == symbol_name.split('.')[-1]:    # type:ignore
-                    return ast.unparse(node)
-        
-        return ""
-
-
-    def get_module_impl(self, file_path: str) -> str:
-        with open(file_path, 'r') as file:  # NOTE: try-exceptは呼出側で行えばよさそう
-            return file.read()
-
-
     def _collect_imports(self, tree: ast.AST) -> list[ast.Import|ast.ImportFrom]:
         import_statements: list[ast.Import|ast.ImportFrom] = []
         for node in ast.walk(tree):

@@ -1,7 +1,8 @@
+# TODO: このファイル必要ないかも？？
+
 import os
 
 from dotenv import load_dotenv
-
 
 load_dotenv(verbose=True)
 
