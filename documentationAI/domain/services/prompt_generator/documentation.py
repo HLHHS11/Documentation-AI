@@ -54,8 +54,6 @@ class DocumentationPromptGeneratorContext(IPromptGeneratorContext):
         return self.required_symbol_docs
 
 # NOTE: ↓まだきちんと考察していないときに書いたのが以下のメモだが，テンプレートからプロンプトを生成する機能ぐらいならLangChainなしで作れる！しかも安全に！
-# # TODO: ドメイン層であるが，実装はLangChainライブラリに依存している。
-# #       外部からクラスの機能を利用する分には隠蔽できておりさして問題ないはずだが，必要に応じてインターフェース等によるラップを検討することもできる
 class DocumentationPromptGenerator(IPromptGenerator):
 
     def __init__(self):
