@@ -20,15 +20,17 @@ class InMemoryDocumentRepositoryImpl(IDocumentRepository):
 if __name__ == "__main__":
     from documentationAI.domain.implementation.python.symbol import PythonSymbolId
 
-    document_repository = InMemoryDocumentRepositoryImpl()
+    def debug():
+        document_repository = InMemoryDocumentRepositoryImpl()
 
-    document1 = Document(
-        symbol_id = PythonSymbolId("test.namespace.hoge", "test_symbol_name"),
-        content = "test_document_content",
-        succeeded = True
-    )
+        document1 = Document(
+            symbol_id = PythonSymbolId("test.namespace.hoge", "test_symbol_name"),
+            content = "test_document_content",
+            succeeded = True
+        )
 
-    document_repository.save(document1)
+        document_repository.save(document1)
 
+        print(document_repository.get_by_symbol_id(PythonSymbolId("test.namespace.hoge", "test_symbol_name")).get_content())
 
-    print(document_repository.get_by_symbol_id(PythonSymbolId("test.namespace.hoge", "test_symbol_name")).get_content())
+    debug()
