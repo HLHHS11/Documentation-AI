@@ -40,5 +40,5 @@ class IModuleAnalyzer(abc.ABC):
 class IPackageAnalyzer(abc.ABC):
 
     @abc.abstractmethod
-    def generate_dag(self, package_root_dir: str, package_name: str) -> Dict[str, list[str]]:
+    def generate_dag(self, package_root_dir: str, package_name: str) -> Dict[ISymbolId, list[ISymbolId]]:
         pass

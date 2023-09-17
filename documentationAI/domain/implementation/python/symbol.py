@@ -22,5 +22,8 @@ class PythonSymbolId(ISymbolId):
         else:
             return False
     
+    def __hash__(self) -> int:
+        return hash(self.stringify())
+    
     def __str__(self) -> str:
         return f"PythonSymbolInfo(namespace={self.namespace}, symbol_name={self.symbol_name})"

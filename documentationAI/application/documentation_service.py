@@ -35,17 +35,16 @@ class DocumentationService:
         resolved = topological_sort(dependencies_map)
 
         # 解決された順番にしたがってドキュメンテーション生成を行う。
-        for symbol_id_str in resolved:
-            required_symbol_id_str_list = dependencies_map[symbol_id_str]   # TODO: 解析対象のファイルで「存在しないモジュールをインポートしている」場合，ここでエラーになる。なぜなら，dependencies_mapは存在するモジュールのシンボル情報を解析して保存した辞書だから。
+        for symbol_id in resolved:
+            # TODO: 解析対象のファイルで「存在しないモジュールをインポートしている」場合，ここでエラーになる。なぜなら，dependencies_mapは存在するモジュールのシンボル情報を解析して保存した辞書だから。
+            required_symbol_ids = dependencies_map[symbol_id]
             # 1. シンボルのソース定義を取得
-            symbol_id = self.helper.parse_symbol_id_str(symbol_id_str)
             print(f"Generating document for {symbol_id.stringify()}...")
             symbol_def = self.helper.get_symbol_def(symbol_id, package_root_dir)
 
             # 2. 依存先シンボルのドキュメントを取得
             required_symbol_docs: list[Document] = []
-            for required_symbol_id_str in required_symbol_id_str_list:
-                required_symbol_id = self.helper.parse_symbol_id_str(required_symbol_id_str)
+            for required_symbol_id in required_symbol_ids:
                 required_symbol_doc = self.document_repository.get_by_symbol_id(required_symbol_id)
                 if required_symbol_doc: # TODO: 見つからなければ何をするのか，具体的に考えておくこと
                     required_symbol_docs.append(required_symbol_doc)
@@ -66,7 +65,7 @@ class DocumentationService:
             # TODO: 例外処理をもっと丁寧に書く
             except InvalidRequestError as e:
                 print(e)
-                print(f"An error occurred and skipped generating documentation for {symbol_id_str}.")
+                print(f"An error occurred and skipped generating documentation for {symbol_id.stringify()}.")
                 self.document_repository.save(Document(
                     symbol_id = symbol_id,
                     content = "",

@@ -21,6 +21,10 @@ class ISymbolId(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def __hash__(self) -> int:
+        pass
+
+    @abc.abstractmethod
     def __str__(self) -> str:
         pass
 
