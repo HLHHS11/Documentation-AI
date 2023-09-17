@@ -51,3 +51,13 @@ class PythonPackageAnalyzer(IPackageAnalyzer):
                         dag[symbol_id].append(required_symbol_id)
                     
         return dag
+
+    
+    def generate_reversed_dag_from_dag(self, dag: Dict[PythonSymbolId, list[PythonSymbolId]]) -> Dict[PythonSymbolId, list[PythonSymbolId]]:    # type: ignore
+        reversed_dag: Dict[PythonSymbolId, list[PythonSymbolId]] = {node: [] for node in dag}
+
+        for node, dependencies in dag.items():
+            for dependency in dependencies:
+                reversed_dag[dependency].append(node)
+        
+        return reversed_dag

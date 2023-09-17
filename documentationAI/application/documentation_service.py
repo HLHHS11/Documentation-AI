@@ -1,3 +1,7 @@
+from typing import Dict
+import asyncio
+import time
+
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage
 from openai import InvalidRequestError
@@ -7,6 +11,7 @@ from documentationAI.domain.repositories.interfaces import IDocumentRepository
 from documentationAI.domain.services.analyzer import IAnalyzerHelper, IPackageAnalyzer
 from documentationAI.domain.models.document import Document
 from documentationAI.domain.services.prompt_generator.documentation import DocumentationPromptGenerator, DocumentationPromptGeneratorContext
+from documentationAI.domain.models.symbol import ISymbolId
 
 
 class DocumentationService:
@@ -23,74 +28,140 @@ class DocumentationService:
         self.helper = helper
         self.prompt_generator = prompt_generator
 
-    def generate_package_documentation(
+    async def generate_package_documentation(
         self,
         project_root_dir: str,
         package_root_dir: str,
         package_name: str
     ) -> None:
         
+        # for debugging
+        self._counter = 0
+        self._package_root_dir = package_root_dir
         # パッケージ解析サービスを利用して，シンボルの依存関係を取得するとともに，解決順序を取得する
-        dependencies_map = self.package_analyzer.generate_dag(package_root_dir, package_name)
-        resolved = topological_sort(dependencies_map)
+        self._dependencies_map = self.package_analyzer.generate_dag(package_root_dir, package_name)
+        self._resolved = topological_sort(self._dependencies_map)
+
+        # 参照の関係も取得するため，逆向きのDAGを生成する
+        self._reversed_dependencies_map = self.package_analyzer.generate_reversed_dag_from_dag(self._dependencies_map)
+
+        # progressは現状"pending", "processing", "fulfilled", "rejected"の4つの値をとることにする
+        self.progress_map: Dict[ISymbolId, str] = {symbol_id: "pending" for symbol_id in self._dependencies_map.keys()}
 
         # 解決された順番にしたがってドキュメンテーション生成を行う。
-        for symbol_id in resolved:
-            # TODO: 解析対象のファイルで「存在しないモジュールをインポートしている」場合，ここでエラーになる。なぜなら，dependencies_mapは存在するモジュールのシンボル情報を解析して保存した辞書だから。
-            required_symbol_ids = dependencies_map[symbol_id]
-            # 1. シンボルのソース定義を取得
-            print(f"Generating document for {symbol_id.stringify()}...")
-            symbol_def = self.helper.get_symbol_def(symbol_id, package_root_dir)
-
-            # 2. 依存先シンボルのドキュメントを取得
-            required_symbol_docs: list[Document] = []
-            for required_symbol_id in required_symbol_ids:
-                required_symbol_doc = self.document_repository.get_by_symbol_id(required_symbol_id)
-                if required_symbol_doc: # TODO: 見つからなければ何をするのか，具体的に考えておくこと
-                    required_symbol_docs.append(required_symbol_doc)
+        initial_process_symbol_ids: list[ISymbolId] = []
+        for symbol_id in self._resolved:
             
-            # 3. AIに投げるための質問文を生成
-            context = DocumentationPromptGeneratorContext.from_dict({
-                "symbol_id": symbol_id,
-                "symbol_def": symbol_def,
-                "required_symbol_docs": required_symbol_docs,
-            })
-            prompt = self.prompt_generator.generate(context)
-
-            # 4. AIにプロンプトを投げて，返ってきた返答をドキュメントとして保存
-            chat = ChatOpenAI(temperature = 0.25)
-            messages = [HumanMessage(content = prompt)]
-            try:
-                response = chat(messages)
-            # TODO: 例外処理をもっと丁寧に書く
-            except InvalidRequestError as e:
-                print(e)
-                print(f"An error occurred and skipped generating documentation for {symbol_id.stringify()}.")
-                self.document_repository.save(Document(
-                    symbol_id = symbol_id,
-                    content = "",
-                    succeeded = False
-                ))
+            if self._can_be_processed(symbol_id):
+                initial_process_symbol_ids.append(symbol_id)
+            else:
                 continue
- 
-            response = chat(messages)
-            response_text = response.content
-            generated_document = Document(  # TODO: よしなに生成する。これ専用にファクトリメソッドを作ってもいい
-                symbol_id = symbol_id,
-                # dependencies = required_symbol_id_list,   # TODO: 現時点では`required_symbol_id_list`を直接は利用していないので，コメントアウト
-                content = response_text,
-                succeeded = True
-            )
-            self.document_repository.save(generated_document)
-            
-            print(f"Generated document for {symbol_id.stringify()}.")
+        tasks = [self._exec_documentation_chain(symbol_id) for symbol_id in initial_process_symbol_ids]
+        await asyncio.gather(*tasks)
 
+        # for debugging
+        print(self.progress_map)
         return
+
+
+    async def _documentation(self, symbol_id: ISymbolId):
+        # TODO: 解析対象のファイルで「存在しないモジュールをインポートしている」場合，ここでエラーになる。なぜなら，dependencies_mapは存在するモジュールのシンボル情報を解析して保存した辞書だから。
+        required_symbol_ids = self._dependencies_map[symbol_id]
+        # 1. シンボルのソース定義を取得
+        print(f"[STARTED]: Generating document for {symbol_id.stringify()}...")
+        symbol_def = self.helper.get_symbol_def(symbol_id, self._package_root_dir)
+
+        # 2. 依存先シンボルのドキュメントを取得
+        required_symbol_docs: list[Document] = []
+        for required_symbol_id in required_symbol_ids:
+            required_symbol_doc = self.document_repository.get_by_symbol_id(required_symbol_id)
+            if required_symbol_doc: # TODO: 見つからなければ何をするのか，具体的に考えておくこと
+                required_symbol_docs.append(required_symbol_doc)
+        
+        # 3. AIに投げるための質問文を生成
+        context = DocumentationPromptGeneratorContext.from_dict({
+            "symbol_id": symbol_id,
+            "symbol_def": symbol_def,
+            "required_symbol_docs": required_symbol_docs,
+        })
+        prompt = self.prompt_generator.generate(context)
+
+        # 4. AIにプロンプトを投げて，返ってきた返答をドキュメントとして保存
+        chat = ChatOpenAI(temperature = 0.25)
+        messages = [HumanMessage(content = prompt)]
+
+        # async def _chat_async_wrapper(messages: list[HumanMessage]) -> HumanMessage:
+        #     result = await asyncio.to_thread(chat, messages)
+        #     return result
+        
+        # try:
+        #     response = await _chat_async_wrapper(messages)
+        # # TODO: 例外処理をもっと丁寧に書く
+        # except InvalidRequestError as e:
+        #     print(e)
+        #     print(f"An error occurred and skipped generating documentation for {symbol_id.stringify()}.")
+        #     self.document_repository.save(Document(
+        #         symbol_id = symbol_id,
+        #         content = "",
+        #         succeeded = False
+        #     ))
+        #     return
+        
+        # response_text = response.content
+
+        async def _sleep_async_wrapper():
+            await asyncio.to_thread(time.sleep, 1)
+            return
+        await _sleep_async_wrapper()
+        response_text = f"{self._counter}テストレスポンス。これはテストです。"
+        self._counter += 1
+
+        generated_document = Document(  # TODO: よしなに生成する。これ専用にファクトリメソッドを作ってもいい
+            symbol_id = symbol_id,
+            # dependencies = required_symbol_id_list,   # TODO: 現時点では`required_symbol_id_list`を直接は利用していないので，コメントアウト
+            content = response_text,
+            succeeded = True
+        )
+        self.document_repository.save(generated_document)
+        
+        print(f"[FINISHED]: Generated document for {symbol_id.stringify()}.")
+        return
+    
+
+    def _can_be_processed(self, symbol_id: ISymbolId) -> bool:
+        self.progress_map
+        for dependency in self._dependencies_map[symbol_id]:
+            if self.progress_map[dependency] != "fulfilled":
+                return False
+        return True
+    
+
+    async def _exec_documentation_chain(self, symbol_id: ISymbolId):
+        if self.progress_map[symbol_id] == "processing":
+            return
+        if self.progress_map[symbol_id] == "fulfilled":
+            return
+        else:
+            self.progress_map[symbol_id] = "processing"
+            await self._documentation(symbol_id)
+            self.progress_map[symbol_id] = "fulfilled"
+
+            symbols_to_be_processed: list[ISymbolId] = []
+            for each_reference in self._reversed_dependencies_map[symbol_id]:
+                if self._can_be_processed(each_reference):
+                    symbols_to_be_processed.append(each_reference)
+                else:
+                    continue
+            
+            tasks = [self._exec_documentation_chain(symbol_id) for symbol_id in symbols_to_be_processed]
+            await asyncio.gather(*tasks)
+        return
+
 
 
 if __name__ == "__main__":
 
-    def debug():
+    async def debug():
         import os
         from documentationAI.domain.implementation.python.package_analyzer import PythonPackageAnalyzer
         from documentationAI.domain.implementation.python.module_analyzer import PythonModuleAnalyzer
@@ -108,7 +179,7 @@ if __name__ == "__main__":
                 super().__init__()
             def save(self, document: Document) -> None:
                 super().save(document)
-                print("\n========saved========")
+                # print("\n========saved========")
                 print(document.get_content())
             def get_by_symbol_id(self, symbol_id: PythonSymbolId) -> Document:  # type: ignore
                 return super().get_by_symbol_id(symbol_id)
@@ -126,6 +197,6 @@ if __name__ == "__main__":
         package_root_dir = os.path.join(project_root_dir, "documentationAI")
         package_name = "documentationAI"
 
-        documentation_service.generate_package_documentation(project_root_dir, package_root_dir, package_name)
+        await documentation_service.generate_package_documentation(project_root_dir, package_root_dir, package_name)
 
-    debug()
+    asyncio.run(debug())
