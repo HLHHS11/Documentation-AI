@@ -1,6 +1,7 @@
 # TODO: ハンドラを定義して，辞書`routes`に名前付きで登録してください。
 # TODO: 現状，ハンドラはパラメータとして引数`params: list[str]`として受け取っていますが，変更を検討しても良いかもしれません。
 import os
+import asyncio
 from typing import Dict, Callable
 
 
@@ -45,7 +46,11 @@ def documentation(params: list[str]) -> None:
             }
         })
         documentation_generator_service = container.documentation_service()
-        documentation_generator_service.generate_package_documentation(project_root_dir, package_root_dir, package_name)
+
+        async def _generate():
+            await documentation_generator_service.generate_package_documentation(project_root_dir, package_root_dir, package_name)
+        
+        asyncio.run(_generate())
         break
     
 

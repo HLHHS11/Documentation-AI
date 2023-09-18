@@ -37,6 +37,7 @@ class DocumentationService:
         
         # for debugging
         self._counter = 0
+
         self._package_root_dir = package_root_dir
         # パッケージ解析サービスを利用して，シンボルの依存関係を取得するとともに，解決順序を取得する
         self._dependencies_map = self.package_analyzer.generate_dag(package_root_dir, package_name)
@@ -59,8 +60,6 @@ class DocumentationService:
         tasks = [self._exec_documentation_chain(symbol_id) for symbol_id in initial_process_symbol_ids]
         await asyncio.gather(*tasks)
 
-        # for debugging
-        print(self.progress_map)
         return
 
 
@@ -89,32 +88,26 @@ class DocumentationService:
         # 4. AIにプロンプトを投げて，返ってきた返答をドキュメントとして保存
         chat = ChatOpenAI(temperature = 0.25)
         messages = [HumanMessage(content = prompt)]
-
-        # async def _chat_async_wrapper(messages: list[HumanMessage]) -> HumanMessage:
-        #     result = await asyncio.to_thread(chat, messages)
-        #     return result
         
-        # try:
-        #     response = await _chat_async_wrapper(messages)
-        # # TODO: 例外処理をもっと丁寧に書く
-        # except InvalidRequestError as e:
-        #     print(e)
-        #     print(f"An error occurred and skipped generating documentation for {symbol_id.stringify()}.")
-        #     self.document_repository.save(Document(
-        #         symbol_id = symbol_id,
-        #         content = "",
-        #         succeeded = False
-        #     ))
-        #     return
-        
-        # response_text = response.content
-
-        async def _sleep_async_wrapper():
-            await asyncio.to_thread(time.sleep, 1)
+        try:
+            response = await asyncio.to_thread(chat, messages)
+        # TODO: 例外処理をもっと丁寧に書く
+        except InvalidRequestError as e:
+            print(e)
+            print(f"An error occurred and skipped generating documentation for {symbol_id.stringify()}.")
+            self.document_repository.save(Document(
+                symbol_id = symbol_id,
+                content = "",
+                succeeded = False
+            ))
             return
-        await _sleep_async_wrapper()
-        response_text = f"{self._counter}テストレスポンス。これはテストです。"
-        self._counter += 1
+        
+        response_text = response.content
+
+        # 4. のデバッグ用。実際にはリクエストを投げず，適当なテキストを返すようにする。
+        # await asyncio.to_thread(time.sleep, 1)
+        # response_text = f"{self._counter}テストレスポンス。これはテストです。"
+        # self._counter += 1
 
         generated_document = Document(  # TODO: よしなに生成する。これ専用にファクトリメソッドを作ってもいい
             symbol_id = symbol_id,
@@ -179,7 +172,7 @@ if __name__ == "__main__":
                 super().__init__()
             def save(self, document: Document) -> None:
                 super().save(document)
-                # print("\n========saved========")
+                print("\n========saved========")
                 print(document.get_content())
             def get_by_symbol_id(self, symbol_id: PythonSymbolId) -> Document:  # type: ignore
                 return super().get_by_symbol_id(symbol_id)
