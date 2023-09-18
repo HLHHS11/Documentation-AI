@@ -47,7 +47,7 @@ class DocumentationService:
         self._reversed_dependencies_map = self.package_analyzer.generate_reversed_dag_from_dag(self._dependencies_map)
 
         # progressは現状"pending", "processing", "fulfilled", "rejected"の4つの値をとることにする
-        self.progress_map: Dict[ISymbolId, str] = {symbol_id: "pending" for symbol_id in self._dependencies_map.keys()}
+        self._progress_map: Dict[ISymbolId, str] = {symbol_id: "pending" for symbol_id in self._dependencies_map.keys()}
 
         # 解決された順番にしたがってドキュメンテーション生成を行う。
         initial_process_symbol_ids: list[ISymbolId] = []
@@ -124,7 +124,7 @@ class DocumentationService:
     # シンボルのドキュメント生成が可能かどうかを判定するprivateメソッド。依存先シンボルのドキュメントがすべて生成済み（または依存先がない）ことを確認する
     def _can_be_processed(self, symbol_id: ISymbolId) -> bool:
         for dependency in self._dependencies_map[symbol_id]:
-            if self.progress_map[dependency] != "fulfilled":
+            if self._progress_map[dependency] != "fulfilled":
                 return False
         return True
     
@@ -133,10 +133,10 @@ class DocumentationService:
     # 受け取った`symbol_id`のドキュメントが未生成であることをチェックしてから，ドキュメントを生成
     # さらに生成後には，`symbol_id`に依存しているシンボルのうち，ドキュメント生成が可能な状態のものを再帰的に処理する。
     async def _exec_documentation_chain(self, symbol_id: ISymbolId):
-        if self.progress_map[symbol_id] == "pending":
-            self.progress_map[symbol_id] = "processing"
+        if self._progress_map[symbol_id] == "pending":
+            self._progress_map[symbol_id] = "processing"
             await self._documentation(symbol_id)
-            self.progress_map[symbol_id] = "fulfilled"
+            self._progress_map[symbol_id] = "fulfilled"
 
             symbols_to_be_processed: list[ISymbolId] = []
             for each_reference in self._reversed_dependencies_map[symbol_id]:
