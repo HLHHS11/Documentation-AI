@@ -52,11 +52,11 @@ class DocumentationService:
         # 解決された順番にしたがってドキュメンテーション生成を行う。
         initial_process_symbol_ids: list[ISymbolId] = []
         for symbol_id in self._resolved:
-            
             if self._can_be_processed(symbol_id):
                 initial_process_symbol_ids.append(symbol_id)
             else:
-                continue
+                # 一度でもelseに入ったなら，その後の要素はすべて何らかの依存先をもつ=初期には処理できない。そのためこれ以上ループを回しても意味がない
+                break
         tasks = [self._exec_documentation_chain(symbol_id) for symbol_id in initial_process_symbol_ids]
         await asyncio.gather(*tasks)
 
@@ -106,8 +106,8 @@ class DocumentationService:
 
         # 4. のデバッグ用。実際にはリクエストを投げず，適当なテキストを返すようにする。
         # await asyncio.to_thread(time.sleep, 1)
-        # response_text = f"{self._counter}テストレスポンス。これはテストです。"
         # self._counter += 1
+        # response_text = f"{self._counter}テストレスポンス。これはテストです。"
 
         generated_document = Document(  # TODO: よしなに生成する。これ専用にファクトリメソッドを作ってもいい
             symbol_id = symbol_id,
@@ -121,20 +121,19 @@ class DocumentationService:
         return
     
 
+    # シンボルのドキュメント生成が可能かどうかを判定するprivateメソッド。依存先シンボルのドキュメントがすべて生成済み（または依存先がない）ことを確認する
     def _can_be_processed(self, symbol_id: ISymbolId) -> bool:
-        self.progress_map
         for dependency in self._dependencies_map[symbol_id]:
             if self.progress_map[dependency] != "fulfilled":
                 return False
         return True
     
 
+    # ドキュメント生成を連鎖的に実行するprivateメソッド。
+    # 受け取った`symbol_id`のドキュメントが未生成であることをチェックしてから，ドキュメントを生成
+    # さらに生成後には，`symbol_id`に依存しているシンボルのうち，ドキュメント生成が可能な状態のものを再帰的に処理する。
     async def _exec_documentation_chain(self, symbol_id: ISymbolId):
-        if self.progress_map[symbol_id] == "processing":
-            return
-        if self.progress_map[symbol_id] == "fulfilled":
-            return
-        else:
+        if self.progress_map[symbol_id] == "pending":
             self.progress_map[symbol_id] = "processing"
             await self._documentation(symbol_id)
             self.progress_map[symbol_id] = "fulfilled"
@@ -148,8 +147,6 @@ class DocumentationService:
             
             tasks = [self._exec_documentation_chain(symbol_id) for symbol_id in symbols_to_be_processed]
             await asyncio.gather(*tasks)
-        return
-
 
 
 if __name__ == "__main__":
