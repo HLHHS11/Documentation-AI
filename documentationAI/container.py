@@ -57,7 +57,7 @@ class Container(containers.DeclarativeContainer):
         DocumentationPromptGenerator,
     )
 
-    documentation_service = providers.Singleton(
+    documentation_service = providers.Factory(
         DocumentationService,
         package_analyzer = package_analyzer,
         document_repository = document_repository,

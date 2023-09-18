@@ -42,3 +42,7 @@ class IPackageAnalyzer(abc.ABC):
     @abc.abstractmethod
     def generate_dag(self, package_root_dir: str, package_name: str) -> Dict[ISymbolId, list[ISymbolId]]:
         pass
+    
+    @abc.abstractmethod
+    def generate_reversed_dag_from_dag(self, dag: Dict[ISymbolId, list[ISymbolId]]) -> Dict[ISymbolId, list[ISymbolId]]:
+        pass
