@@ -45,12 +45,9 @@ def documentation(params: list[str]) -> None:
                 "db_path": os.path.join(project_root_dir, "docai_db.sqlite")
             }
         })
-        documentation_generator_service = container.documentation_service()
+        documentation_service = container.documentation_service()
 
-        async def _generate():
-            await documentation_generator_service.generate_package_documentation(project_root_dir, package_root_dir, package_name)
-        
-        asyncio.run(_generate())
+        asyncio.run(documentation_service.generate_package_documentation(project_root_dir, package_root_dir, package_name))
         break
     
 
