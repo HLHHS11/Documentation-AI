@@ -16,3 +16,6 @@ upload.zip
 .env
 
 temp_note.md
+
+# db file for test
+test/test_db.sqlite
