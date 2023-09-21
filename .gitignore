@@ -16,3 +16,9 @@ upload.zip
 .env
 
 temp_note.md
+
+# db file for test
+test/test_db.sqlite
+
+# db file for `DocumentationService` test
+test/test_documentation_service_db.sqlite
