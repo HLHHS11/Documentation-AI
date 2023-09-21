@@ -94,13 +94,22 @@ class DocumentationService:
         # TODO: 例外処理をもっと丁寧に書く
         except InvalidRequestError as e:
             print(e)
-            print(f"An error occurred and skipped generating documentation for {symbol_id.stringify()}.")
-            self.document_repository.save(Document(
-                symbol_id = symbol_id,
-                content = "",
-                succeeded = False
-            ))
-            return
+            # トークン数の問題でエラーが発生したので，GPT-3.5 16k contextを利用して再度トライする旨を表示
+            print(f"A token limit error occurred for {symbol_id.stringify()}, so we will try again with GPT-3.5 16k context.")
+            # GPT-3.5 16k contextを使用して再度トライ
+            try:
+                chat = ChatOpenAI(temperature = 0.25, model = "gpt-3.5-turbo-16k")
+                response = await asyncio.to_thread(chat, messages)
+                print("Successfully generated documentation with GPT-3.5 16k context.")
+            except InvalidRequestError as e:
+                print(f"An error occurred and skipped generating documentation for {symbol_id.stringify()}.")
+                self.document_repository.save(Document(
+                    symbol_id = symbol_id,
+                    dependencies = required_symbol_ids,
+                    content = "",
+                    succeeded = False
+                ))
+                return
         
         response_text = response.content
 
