@@ -45,14 +45,14 @@ class Container(containers.DeclarativeContainer):
     )
 
     # document_repository = providers.Singleton(
-    #     InMemoryDocumentRepositoryImpl,
+    #     SQLiteDocumentRepositoryImpl,
+    #     sqlite_db_path = config.sqlite.db_path
     # )
 
     document_repository = providers.Singleton(
-        SQLiteDocumentRepositoryImpl,
-        sqlite_db_path = config.sqlite.db_path,
-        helper = helper
+        InMemoryDocumentRepositoryImpl,
     )
+
     prompt_generator = providers.Factory(
         DocumentationPromptGenerator,
     )

@@ -94,22 +94,13 @@ class DocumentationService:
         # TODO: 例外処理をもっと丁寧に書く
         except InvalidRequestError as e:
             print(e)
-            # トークン数の問題でエラーが発生したので，GPT-3.5 16k contextを利用して再度トライする旨を表示
-            print(f"A token limit error occurred for {symbol_id.stringify()}, so we will try again with GPT-3.5 16k context.")
-            # GPT-3.5 16k contextを使用して再度トライ
-            try:
-                chat = ChatOpenAI(temperature = 0.25, model = "gpt-3.5-turbo-16k")
-                response = await asyncio.to_thread(chat, messages)
-                print("Successfully generated documentation with GPT-3.5 16k context.")
-            except InvalidRequestError as e:
-                print(f"An error occurred and skipped generating documentation for {symbol_id.stringify()}.")
-                self.document_repository.save(Document(
-                    symbol_id = symbol_id,
-                    dependencies = required_symbol_ids,
-                    content = "",
-                    succeeded = False
-                ))
-                return
+            print(f"An error occurred and skipped generating documentation for {symbol_id.stringify()}.")
+            self.document_repository.save(Document(
+                symbol_id = symbol_id,
+                content = "",
+                succeeded = False
+            ))
+            return
         
         response_text = response.content
 
@@ -166,24 +157,21 @@ if __name__ == "__main__":
         from documentationAI.domain.implementation.python.module_analyzer import PythonModuleAnalyzer
         from documentationAI.domain.implementation.python.helper import PythonAnalyzerHelper
         from documentationAI.domain.implementation.python.symbol import PythonSymbolId
-        from documentationAI.interfaces.repository.document_repository_impl.sqlite import SQLiteDocumentRepositoryImpl
+        from documentationAI.interfaces.repository.document_repository_impl.in_memory import InMemoryDocumentRepositoryImpl
 
 
         helper = PythonAnalyzerHelper()
         module_analyzer = PythonModuleAnalyzer(helper)
         package_analyzer = PythonPackageAnalyzer(module_analyzer, helper)
         prompt_generator = DocumentationPromptGenerator()
-        class MockDocumentRepository(SQLiteDocumentRepositoryImpl):
+        class MockDocumentRepository(InMemoryDocumentRepositoryImpl):
             def __init__(self):
-                super().__init__(
-                    sqlite_db_path = os.path.join(os.path.dirname(__file__), "../../", "test/test_documentation_service_db.sqlite"),
-                    helper = PythonAnalyzerHelper()
-                )
+                super().__init__()
             def save(self, document: Document) -> None:
                 super().save(document)
                 print("\n========saved========")
                 print(document.get_content())
-            def get_by_symbol_id(self, symbol_id: PythonSymbolId) -> Document|None:  # type: ignore
+            def get_by_symbol_id(self, symbol_id: PythonSymbolId) -> Document:  # type: ignore
                 return super().get_by_symbol_id(symbol_id)
         
         document_repository = MockDocumentRepository()
