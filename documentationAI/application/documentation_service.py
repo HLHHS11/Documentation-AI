@@ -111,7 +111,7 @@ class DocumentationService:
 
         generated_document = Document(  # TODO: よしなに生成する。これ専用にファクトリメソッドを作ってもいい
             symbol_id = symbol_id,
-            # dependencies = required_symbol_id_list,   # TODO: 現時点では`required_symbol_id_list`を直接は利用していないので，コメントアウト
+            dependencies = required_symbol_ids,
             content = response_text,
             succeeded = True
         )

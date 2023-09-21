@@ -25,6 +25,7 @@ if __name__ == "__main__":
 
         document1 = Document(
             symbol_id = PythonSymbolId("test.namespace.hoge", "test_symbol_name"),
+            dependencies = [],
             content = "test_document_content",
             succeeded = True
         )
