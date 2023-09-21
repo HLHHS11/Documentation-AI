@@ -8,7 +8,7 @@ from documentationAI.domain.models.symbol import ISymbolId
 class IDocumentRepository(abc.ABC):
 
     @abc.abstractmethod
-    def get_by_symbol_id(self, symbol_id: ISymbolId) -> Document:
+    def get_by_symbol_id(self, symbol_id: ISymbolId) -> Document|None:
         pass
 
     @abc.abstractmethod

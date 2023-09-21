@@ -10,8 +10,11 @@ class InMemoryDocumentRepositoryImpl(IDocumentRepository):
     def __init__(self):
         self._documents: Dict[str, Document] = {}
     
-    def get_by_symbol_id(self, symbol_id: ISymbolId) -> Document:
-        return self._documents[symbol_id.stringify()]
+    def get_by_symbol_id(self, symbol_id: ISymbolId) -> Document|None:
+        try:
+            return self._documents[symbol_id.stringify()]
+        except KeyError:
+            return None
     
     def save(self, document: Document) -> None:
         self._documents[document.get_symbol_id().stringify()] = document
