@@ -8,12 +8,12 @@ class Document:
     def __init__(
         self,
         symbol_id: ISymbolId,
-        # dependencies: list[ISymbolId],
+        dependencies: list[ISymbolId],
         content: str,
         succeeded: bool,
     ):
         self._symbol_id = symbol_id
-        # self._dependencies = dependencies
+        self._dependencies = dependencies
         self._content = content
         self._succeeded = succeeded
 
@@ -25,3 +25,6 @@ class Document:
 
     def is_succeeded(self) -> bool:
         return self._succeeded
+    
+    def get_dependencies(self) -> list[ISymbolId]:
+        return self._dependencies
